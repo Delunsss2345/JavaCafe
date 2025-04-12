@@ -1,4 +1,5 @@
 package dao;
+import java.math.BigDecimal;
 //Người làm Phạm Thanh Huy
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -50,6 +51,7 @@ public class SanPhamDAO {
         }
         return null;
     }
+    
     public boolean addSanPham(SanPham sanPham) {
         String sql = "INSERT INTO SanPham (TenSanPham, MaLoai, Gia, MoTa, TrangThai, HinhAnh, NgayCapNhat) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?)"; 
@@ -65,8 +67,8 @@ public class SanPhamDAO {
 
             // Kiểm tra giá trị TrangThai có hợp lệ không
             String trangThai = sanPham.getTrangThai();
-            if (!trangThai.equals("Đang Bán") && !trangThai.equals("Hết Hàng")) {
-                throw new SQLException("Giá trị TrangThai không hợp lệ. Chỉ được phép 'Đang Bán' hoặc 'Hết Hàng'.");
+            if (!trangThai.equals("Đang Bán") && !trangThai.equals("Hết Hàng") && !trangThai.equals("Ngưng Bán")) {
+                throw new SQLException("Giá trị TrangThai không hợp lệ. Chỉ được phép 'Đang Bán', 'Hết Hàng' hoặc 'Ngưng Bán'.");
             }
             stmt.setString(5, trangThai);
             stmt.setString(6, sanPham.getHinhAnh());  
@@ -95,8 +97,8 @@ public class SanPhamDAO {
 
            
             String trangThai = sanPham.getTrangThai();
-            if (!trangThai.equals("Đang bán") && !trangThai.equals("Hết bán")) {
-                throw new SQLException("Trạng thái không hợp lệ! Chỉ chấp nhận: 'Đang bán' hoặc 'Hết bán'.");
+            if (!trangThai.equals("Đang Bán") && !trangThai.equals("Hết Hàng") && !trangThai.equals("Ngưng Bán")) {
+                throw new SQLException("Trạng thái không hợp lệ! Chỉ chấp nhận: 'Đang Bán', 'Hết Hàng' hoặc 'Ngưng Bán'.");
             }
 
            
@@ -129,8 +131,7 @@ public class SanPhamDAO {
 
     
     public boolean deleteSanPham(int maSanPham) {
-        String sql = "UPDATE SanPham SET TrangThai = 'Hết bán', NgayCapNhat = GETDATE() "
-                   + "WHERE MaSanPham = ?";
+        String sql = "UPDATE SanPham SET TrangThai = N'Ngừng bán', NgayCapNhat = GETDATE() WHERE MaSanPham = ?";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -166,9 +167,44 @@ public class SanPhamDAO {
         return list;
     }
     
+    public SanPham getSanPhamTheoMa(int maSanPham) {
+        String sql = "SELECT * FROM SanPham WHERE MaSanPham = ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, maSanPham);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String tenSanPham = rs.getString("TenSanPham");
+                    int maLoai = rs.getInt("MaLoai");
+                    BigDecimal gia = rs.getBigDecimal("Gia");
+                    String moTa = rs.getString("MoTa");
+                    String trangThai = rs.getString("TrangThai");
+                    String hinhAnh = rs.getString("HinhAnh");
+                    Timestamp ngayTao = rs.getTimestamp("NgayTao");
+                    Timestamp ngayCapNhat = rs.getTimestamp("NgayCapNhat");
+
+                    return new SanPham(
+                        maSanPham,
+                        tenSanPham,
+                        maLoai,
+                        gia,
+                        moTa,
+                        trangThai,
+                        hinhAnh,
+                        ngayTao.toLocalDateTime(),
+                        ngayCapNhat.toLocalDateTime()
+                    );
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy sản phẩm theo mã: " + maSanPham, e);
+        }
+        return null;
+    }
+
     // Lấy sản phẩm theo loại
     public List<SanPham> getSanPhamByLoai(int maLoai) {
-        String sql = "SELECT * FROM SanPham WHERE MaLoai = ? AND TrangThai = N'Đang bán' ORDER BY NgayCapNhat DESC";
+        String sql = "SELECT * FROM SanPham WHERE MaLoai = ? AND TrangThai = N'Đang Bán' ORDER BY NgayCapNhat DESC";
         List<SanPham> list = new ArrayList<>();
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();

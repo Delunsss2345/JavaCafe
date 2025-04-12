@@ -25,7 +25,8 @@ public class QuanLySanPham extends JPanel {
     private SanPhamDAO sanPhamDAO;
     private DecimalFormat dinhDangTien;
     private JPanel panelButton;  
-    private JButton btnThem, btnSua, btnXoa;  
+    private JButton btnThem, btnSua, btnXoa;
+    private int currentMaLoai; // Track the current category ID
 
     public QuanLySanPham() {
         setLayout(new BorderLayout());
@@ -65,8 +66,8 @@ public class QuanLySanPham extends JPanel {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tableLoaiSanPham.getSelectedRow();
                 if (selectedRow >= 0) {
-                    int maLoai = (int) modelLoaiSanPham.getValueAt(selectedRow, 0);
-                    loadSanPhamTheoLoai(maLoai);
+                    currentMaLoai = (int) modelLoaiSanPham.getValueAt(selectedRow, 0);
+                    loadSanPhamTheoLoai(currentMaLoai);
                     showActionButtons(true);
                 }
             }
@@ -155,7 +156,7 @@ public class QuanLySanPham extends JPanel {
 
     private void loadSanPhamTheoLoai(int maLoai) {
         List<SanPham> sanPhamList = sanPhamDAO.getSanPhamByLoai(maLoai);
-        modelSanPham.setRowCount(0);  // Reset bảng
+        modelSanPham.setRowCount(0);  
 
         for (SanPham sanPham : sanPhamList) {
             ImageIcon imageIcon = new ImageIcon(sanPham.getHinhAnh());
@@ -170,7 +171,7 @@ public class QuanLySanPham extends JPanel {
                 sanPham.getTrangThai(),
                 scaledImageIcon
             };
-            modelSanPham.addRow(rowData);  // Thêm dòng mới vào bảng
+            modelSanPham.addRow(rowData); 
         }
 
         tableSanPham.getColumnModel().getColumn(4).setCellRenderer(new ImageRenderer());
@@ -179,26 +180,26 @@ public class QuanLySanPham extends JPanel {
 
     private void openAddProductDialog() {
         JDialog addProductDialog = new JDialog((Frame) null, "Thêm Sản Phẩm", true);
-        addProductDialog.setLayout(new GridLayout(7, 2));  // Tăng số hàng lên 7 để thêm chọn ảnh
+        addProductDialog.setLayout(new GridLayout(7, 2));  
 
         JTextField txtTenSanPham = new JTextField();
         JTextField txtGia = new JTextField();
         JComboBox<String> cboTrangThai = new JComboBox<>(new String[]{"Đang Bán", "Hết Hàng"});
         JTextField txtMoTa = new JTextField();
-        JTextField txtMaLoai = new JTextField();
+        JTextField txtMaLoai = new JTextField(String.valueOf(currentMaLoai)); // Pre-fill with current category
 
         JLabel lblHinhAnh = new JLabel("Chưa chọn ảnh");
         JButton btnChonAnh = new JButton("Chọn ảnh");
 
-        final String[] hinhAnhPath = {""};  // Biến dùng để lưu tên hoặc đường dẫn ảnh được chọn
+        final String[] hinhAnhPath = {""};  
 
         btnChonAnh.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             int result = fileChooser.showOpenDialog(addProductDialog);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
-                hinhAnhPath[0] = selectedFile.getName();  // Hoặc dùng getAbsolutePath() nếu cần đường dẫn đầy đủ
-                lblHinhAnh.setText(hinhAnhPath[0]);
+                hinhAnhPath[0] = selectedFile.getAbsolutePath(); // Store full path
+                lblHinhAnh.setText(selectedFile.getName());
             }
         });
 
@@ -224,7 +225,7 @@ public class QuanLySanPham extends JPanel {
             }
         });
 
-        // Thêm các trường nhập liệu vào form
+      
         addProductDialog.add(new JLabel("Tên sản phẩm:"));
         addProductDialog.add(txtTenSanPham);
         addProductDialog.add(new JLabel("Giá:"));
@@ -251,78 +252,90 @@ public class QuanLySanPham extends JPanel {
             return;
         }
 
-        // Lấy giá trị từ bảng và kiểm tra
         int maSanPham = (int) modelSanPham.getValueAt(selectedRow, 0);
-        String tenSanPham = (String) modelSanPham.getValueAt(selectedRow, 1);
-        String gia = (String) modelSanPham.getValueAt(selectedRow, 2);
-        String trangThai = (String) modelSanPham.getValueAt(selectedRow, 3);
-        String maLoai = (String) modelSanPham.getValueAt(selectedRow, 4);
-
-        // Kiểm tra trường hợp giá trị null
-        if (tenSanPham == null || gia == null || trangThai == null || maLoai == null) {
-            JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ.", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
+        
+        try {
+            // Get the full product information from the database
+            SanPham sanPham = sanPhamDAO.getSanPhamTheoMa(maSanPham);
+            
+            if (sanPham == null) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin sản phẩm.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            JDialog editProductDialog = new JDialog((Frame) null, "Sửa Sản Phẩm", true);
+            editProductDialog.setLayout(new GridLayout(7, 2));
+    
+            JTextField txtTenSanPham = new JTextField(sanPham.getTenSanPham());
+            JTextField txtGia = new JTextField(sanPham.getGia().toString());
+            JComboBox<String> cboTrangThai = new JComboBox<>(new String[]{"Đang bán", "Hết bán"});
+            cboTrangThai.setSelectedItem(sanPham.getTrangThai());
+            JTextField txtMoTa = new JTextField(sanPham.getMoTa());
+            JTextField txtMaLoai = new JTextField(String.valueOf(sanPham.getMaLoai()));
+            
+            JLabel lblHinhAnh = new JLabel(sanPham.getHinhAnh() != null ? 
+                                       new File(sanPham.getHinhAnh()).getName() : "Không có hình ảnh");
+            JButton btnChonAnh = new JButton("Thay đổi hình ảnh");
+            
+            final String[] hinhAnhPath = {sanPham.getHinhAnh()};
+            
+            btnChonAnh.addActionListener(e -> {
+                JFileChooser fileChooser = new JFileChooser();
+                int result = fileChooser.showOpenDialog(editProductDialog);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    hinhAnhPath[0] = selectedFile.getAbsolutePath();
+                    lblHinhAnh.setText(selectedFile.getName());
+                }
+            });
+    
+            JButton btnSave = new JButton("Lưu");
+            btnSave.addActionListener(e -> {
+                try {
+                    String tenMoi = txtTenSanPham.getText().trim();
+                    BigDecimal giaMoi = new BigDecimal(txtGia.getText().trim());
+                    String trangThaiMoi = (String) cboTrangThai.getSelectedItem();
+                    String moTaMoi = txtMoTa.getText().trim();
+                    int maLoaiMoi = Integer.parseInt(txtMaLoai.getText().trim());
+                    LocalDateTime ngayCapNhat = LocalDateTime.now();
+    
+                    SanPham sp = new SanPham(
+                        maSanPham, tenMoi, maLoaiMoi, giaMoi, moTaMoi, 
+                        trangThaiMoi, hinhAnhPath[0], 
+                        sanPham.getNgayTao(), ngayCapNhat
+                    );
+    
+                    sanPhamDAO.updateSanPham(sp);
+                    loadSanPhamTheoLoai(maLoaiMoi);
+                    editProductDialog.dispose();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(editProductDialog, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+    
+            editProductDialog.add(new JLabel("Tên sản phẩm:"));
+            editProductDialog.add(txtTenSanPham);
+            editProductDialog.add(new JLabel("Giá:"));
+            editProductDialog.add(txtGia);
+            editProductDialog.add(new JLabel("Trạng thái:"));
+            editProductDialog.add(cboTrangThai);
+            editProductDialog.add(new JLabel("Mô tả sản phẩm:"));
+            editProductDialog.add(txtMoTa);
+            editProductDialog.add(new JLabel("Mã loại sản phẩm:"));
+            editProductDialog.add(txtMaLoai);
+            editProductDialog.add(btnChonAnh);
+            editProductDialog.add(lblHinhAnh);
+            editProductDialog.add(btnSave);
+    
+            editProductDialog.setSize(450, 350);
+            editProductDialog.setLocationRelativeTo(null);
+            editProductDialog.setVisible(true);
+            
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi lấy thông tin sản phẩm: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
-
-        JDialog editProductDialog = new JDialog((Frame) null, "Sửa Sản Phẩm", true);
-        editProductDialog.setLayout(new GridLayout(7, 2));
-
-        JTextField txtTenSanPham = new JTextField(tenSanPham);
-        JTextField txtGia = new JTextField(gia);
-        JTextField txtMaLoai = new JTextField(maLoai); // Điền sẵn mã loại vào ô nhập
-        JComboBox<String> cboTrangThai = new JComboBox<>(new String[]{"Đang bán", "Hết bán"});
-        cboTrangThai.setSelectedItem(trangThai);
-
-        JButton btnSave = new JButton("Lưu");
-        btnSave.addActionListener(e -> {
-            String tenMoi = txtTenSanPham.getText().trim();
-            String giaStr = txtGia.getText().replaceAll("[^\\d.]", ""); // Xoá ký tự không hợp lệ
-
-            BigDecimal giaMoi;
-            try {
-                giaMoi = new BigDecimal(giaStr);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(editProductDialog, "Giá không hợp lệ. Vui lòng nhập số hợp lệ (ví dụ: 100000 hoặc 100000.00)", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            String trangThaiMoi = (String) cboTrangThai.getSelectedItem();
-            LocalDateTime ngayCapNhat = LocalDate.now().atStartOfDay();
-
-            // Kiểm tra mã loại hợp lệ trước khi lưu
-            int maLoaiMoi;
-            try {
-                maLoaiMoi = Integer.parseInt(txtMaLoai.getText().trim());
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(editProductDialog, "Mã loại không hợp lệ. Vui lòng nhập một số nguyên hợp lệ.", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Cập nhật sản phẩm
-            sanPhamDAO.updateSanPham(new SanPham(maSanPham, tenMoi, maLoaiMoi, giaMoi, null, trangThaiMoi, null, ngayCapNhat));
-
-            // Tải lại sản phẩm theo loại
-            loadSanPhamTheoLoai(maSanPham);
-            editProductDialog.dispose();
-        });
-
-        // Thêm các thành phần vào cửa sổ chỉnh sửa
-        editProductDialog.add(new JLabel("Tên sản phẩm:"));
-        editProductDialog.add(txtTenSanPham);
-        editProductDialog.add(new JLabel("Giá:"));
-        editProductDialog.add(txtGia);
-        editProductDialog.add(new JLabel("Trạng thái:"));
-        editProductDialog.add(cboTrangThai);
-        editProductDialog.add(new JLabel("Mã loại:"));
-        editProductDialog.add(txtMaLoai); // Hiển thị ô nhập mã loại
-        editProductDialog.add(new JLabel()); // Dòng trống
-        editProductDialog.add(btnSave);
-
-        // Thiết lập kích thước và hiển thị
-        editProductDialog.setSize(400, 300);
-        editProductDialog.setLocationRelativeTo(null);
-        editProductDialog.setVisible(true);
     }
+
 
     private void openDeleteProductDialog() {
         int selectedRow = tableSanPham.getSelectedRow();
@@ -335,8 +348,22 @@ public class QuanLySanPham extends JPanel {
 
         int option = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa sản phẩm này?", "Xóa sản phẩm", JOptionPane.YES_NO_OPTION);
         if (option == JOptionPane.YES_OPTION) {
-            sanPhamDAO.deleteSanPham(maSanPham);
-            loadSanPhamTheoLoai(maSanPham);
+            try {
+               
+                int maLoai = currentMaLoai;
+                
+                boolean success = sanPhamDAO.deleteSanPham(maSanPham);
+                
+                if (success) {
+                    
+                    loadSanPhamTheoLoai(maLoai);
+                    JOptionPane.showMessageDialog(this, "Xóa sản phẩm thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Không thể xóa sản phẩm.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi xóa sản phẩm: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 

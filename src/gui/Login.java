@@ -26,7 +26,7 @@ public class Login extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setBackground(new Color(102, 255, 255));
         setPreferredSize(new Dimension(950, 900));
-        
+       
         jPanel1 = new JPanel();
         jPanel2 = new JPanel();
         jPanel3 = new JPanel();

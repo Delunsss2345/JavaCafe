@@ -8,12 +8,12 @@ public class DatabaseConnection {
     private static DatabaseConnection instance;
     private Connection connection;
 
-    // Database credentials
+   
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=QuanLyQuanCfs;encrypt=true;trustServerCertificate=true";
     private static final String USER = "sa";
     private static final String PASSWORD = "123456";
 
-    // Private constructor để ngăn việc tạo instance trực tiếp
+  
     private DatabaseConnection() {
         try {
             // Load SQL Server JDBC driver
@@ -23,7 +23,7 @@ public class DatabaseConnection {
         }
     }
 
-    // Phương thức static để lấy instance của class
+   
     public static DatabaseConnection getInstance() {
         if (instance == null) {
             instance = new DatabaseConnection();
@@ -31,7 +31,7 @@ public class DatabaseConnection {
         return instance;
     }
 
-    // Phương thức để lấy connection
+  
     public Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             try {
@@ -45,7 +45,7 @@ public class DatabaseConnection {
         return connection;
     }
 
-    // Phương thức đóng kết nối
+  
     public void closeConnection() {
         if (connection != null) {
             try {
@@ -57,7 +57,7 @@ public class DatabaseConnection {
         }
     }
 
-    // Phương thức kiểm tra kết nối
+  
     public boolean testConnection() {
         try {
             getConnection();

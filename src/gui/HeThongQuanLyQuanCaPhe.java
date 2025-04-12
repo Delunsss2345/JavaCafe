@@ -56,7 +56,10 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         JButton btnDangXuat = taoNutMenu("ĐĂNG XUẤT", "src\\images\\logout.png");
 
         // Thêm sự kiện cho các nút menu
-        btnTrangChu.addActionListener(e -> hienThiTrangChu());
+        btnTrangChu.addActionListener(e -> {
+        	hienThiTrangChu() ;
+        	
+        });
         btnSanPham.addActionListener(e -> hienThiQuanLySanPham());
         btnHoaDon.addActionListener(e -> hienThiQuanLyHoaDon());
         btnThongKe.addActionListener(e -> hienThiBaoCaoDoanhThu());
