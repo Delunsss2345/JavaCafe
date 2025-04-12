@@ -1,5 +1,5 @@
 package entities;
-
+//Người làm Phạm Thanh Huy
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -7,12 +7,12 @@ public class SanPham {
     private int maSanPham;
     private String tenSanPham;
     private int maLoai;
-    private BigDecimal gia; // Thay float bằng BigDecimal
+    private BigDecimal gia; 
     private String moTa;
     private String trangThai;
-    private String hinhAnh; // Thêm trường mới
-    private LocalDateTime ngayTao; // Thêm trường mới
-    private LocalDateTime ngayCapNhat; // Thêm trường mới
+    private String hinhAnh; 
+    private LocalDateTime ngayTao; 
+    private LocalDateTime ngayCapNhat; 
 
     public SanPham() {
     }

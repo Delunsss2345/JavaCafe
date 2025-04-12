@@ -1,5 +1,5 @@
 package gui;
-
+//Người làm Phạm Thanh Huy
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -49,7 +49,7 @@ public class ManHinhTrangChu extends JPanel {
         for (SanPham sanPham : danhSachSanPham) {
         	System.out.println("Xử lý sản phẩm: " + sanPham.getTenSanPham()); // Debug
             if (!"Đang bán".equals(sanPham.getTrangThai())) {
-                continue; // Bỏ qua sản phẩm không ở trạng thái "Đang bán"
+                continue; 
             }
 
             JPanel panelItem = new JPanel();
@@ -58,7 +58,7 @@ public class ManHinhTrangChu extends JPanel {
             panelItem.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
             panelItem.setPreferredSize(new Dimension(200, 250));
 
-            // Hiển thị hình ảnh sản phẩm
+          
             JLabel lblHinhAnh = new JLabel();
             if (sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isEmpty()) {
                 ImageIcon icon = new ImageIcon(sanPham.getHinhAnh());
@@ -72,7 +72,7 @@ public class ManHinhTrangChu extends JPanel {
             lblHinhAnh.setHorizontalAlignment(SwingConstants.CENTER);
             lblHinhAnh.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-            // Thông tin sản phẩm
+           
             JPanel panelThongTin = new JPanel(new BorderLayout());
             panelThongTin.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
             
@@ -86,7 +86,7 @@ public class ManHinhTrangChu extends JPanel {
             panelThongTin.add(lblTen, BorderLayout.NORTH);
             panelThongTin.add(lblGia, BorderLayout.SOUTH);
 
-            // Nút thêm vào giỏ hàng
+           
             JButton btnThem = new JButton("Thêm vào giỏ");
             btnThem.setBackground(new Color(50, 150, 50));
             btnThem.setForeground(Color.WHITE);

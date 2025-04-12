@@ -1,5 +1,5 @@
 package entities;
-
+//Người làm Phạm Thanh Huy
 public class LoaiSanPham {
     private int maLoai;
     private String tenLoai;

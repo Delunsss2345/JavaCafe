@@ -1,5 +1,5 @@
 package gui;
-
+//Người làm Phạm Thanh Huy
 import dao.LoaiSanPhamDAO;
 import dao.SanPhamDAO;
 import entities.LoaiSanPham;
@@ -244,7 +244,6 @@ public class QuanLySanPham extends JPanel {
         addProductDialog.setVisible(true);
     }
 
-
     private void openEditProductDialog() {
         int selectedRow = tableSanPham.getSelectedRow();
         if (selectedRow == -1) {
@@ -252,44 +251,76 @@ public class QuanLySanPham extends JPanel {
             return;
         }
 
+        // Lấy giá trị từ bảng và kiểm tra
         int maSanPham = (int) modelSanPham.getValueAt(selectedRow, 0);
         String tenSanPham = (String) modelSanPham.getValueAt(selectedRow, 1);
         String gia = (String) modelSanPham.getValueAt(selectedRow, 2);
         String trangThai = (String) modelSanPham.getValueAt(selectedRow, 3);
+        String maLoai = (String) modelSanPham.getValueAt(selectedRow, 4);
+
+        // Kiểm tra trường hợp giá trị null
+        if (tenSanPham == null || gia == null || trangThai == null || maLoai == null) {
+            JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         JDialog editProductDialog = new JDialog((Frame) null, "Sửa Sản Phẩm", true);
-        editProductDialog.setLayout(new GridLayout(5, 2));
+        editProductDialog.setLayout(new GridLayout(7, 2));
 
         JTextField txtTenSanPham = new JTextField(tenSanPham);
         JTextField txtGia = new JTextField(gia);
-        JComboBox<String> cboTrangThai = new JComboBox<>(new String[]{"Còn Hàng", "Hết Hàng"});
-        LocalDateTime ngayCapNhat = LocalDate.now().atStartOfDay();  // Convert to LocalDateTime
+        JTextField txtMaLoai = new JTextField(maLoai); // Điền sẵn mã loại vào ô nhập
+        JComboBox<String> cboTrangThai = new JComboBox<>(new String[]{"Đang bán", "Hết bán"});
         cboTrangThai.setSelectedItem(trangThai);
 
         JButton btnSave = new JButton("Lưu");
         btnSave.addActionListener(e -> {
-            String tenMoi = txtTenSanPham.getText();
-            BigDecimal giaMoi = new BigDecimal(txtGia.getText());
+            String tenMoi = txtTenSanPham.getText().trim();
+            String giaStr = txtGia.getText().replaceAll("[^\\d.]", ""); // Xoá ký tự không hợp lệ
+
+            BigDecimal giaMoi;
+            try {
+                giaMoi = new BigDecimal(giaStr);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(editProductDialog, "Giá không hợp lệ. Vui lòng nhập số hợp lệ (ví dụ: 100000 hoặc 100000.00)", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             String trangThaiMoi = (String) cboTrangThai.getSelectedItem();
+            LocalDateTime ngayCapNhat = LocalDate.now().atStartOfDay();
 
-            // Cập nhật thông tin sản phẩm trong CSDL
-            sanPhamDAO.updateSanPham(new SanPham(maSanPham, tenMoi, maSanPham, giaMoi, null, trangThaiMoi, null, ngayCapNhat));
+            // Kiểm tra mã loại hợp lệ trước khi lưu
+            int maLoaiMoi;
+            try {
+                maLoaiMoi = Integer.parseInt(txtMaLoai.getText().trim());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(editProductDialog, "Mã loại không hợp lệ. Vui lòng nhập một số nguyên hợp lệ.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-            // Cập nhật lại danh sách sản phẩm theo loại
+            // Cập nhật sản phẩm
+            sanPhamDAO.updateSanPham(new SanPham(maSanPham, tenMoi, maLoaiMoi, giaMoi, null, trangThaiMoi, null, ngayCapNhat));
+
+            // Tải lại sản phẩm theo loại
             loadSanPhamTheoLoai(maSanPham);
             editProductDialog.dispose();
         });
 
+        // Thêm các thành phần vào cửa sổ chỉnh sửa
         editProductDialog.add(new JLabel("Tên sản phẩm:"));
         editProductDialog.add(txtTenSanPham);
         editProductDialog.add(new JLabel("Giá:"));
         editProductDialog.add(txtGia);
         editProductDialog.add(new JLabel("Trạng thái:"));
         editProductDialog.add(cboTrangThai);
-        editProductDialog.add(new JLabel());
+        editProductDialog.add(new JLabel("Mã loại:"));
+        editProductDialog.add(txtMaLoai); // Hiển thị ô nhập mã loại
+        editProductDialog.add(new JLabel()); // Dòng trống
         editProductDialog.add(btnSave);
 
+        // Thiết lập kích thước và hiển thị
         editProductDialog.setSize(400, 300);
+        editProductDialog.setLocationRelativeTo(null);
         editProductDialog.setVisible(true);
     }
 

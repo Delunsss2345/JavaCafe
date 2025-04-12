@@ -1,5 +1,5 @@
 package dao;
-
+// Người làm Phạm Thanh Huy
 import entities.LoaiSanPham;
 import java.sql.*;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public class LoaiSanPhamDAO {
         return list;
     }
 
-    // Add a new product category
+    
     public boolean addLoaiSanPham(LoaiSanPham loaiSanPham) throws SQLException {
         String sql = "INSERT INTO LoaiSanPham (TenLoai, MoTa, Icon) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -44,7 +44,7 @@ public class LoaiSanPhamDAO {
         }
     }
 
-    // Update an existing product category
+  
     public boolean updateLoaiSanPham(LoaiSanPham loaiSanPham) throws SQLException {
         String sql = "UPDATE LoaiSanPham SET TenLoai = ?, MoTa = ?, Icon = ? WHERE MaLoai = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -56,7 +56,7 @@ public class LoaiSanPhamDAO {
         }
     }
 
-    // Delete a product category by ID
+  
     public boolean deleteLoaiSanPham(int maLoai) throws SQLException {
         String sql = "DELETE FROM LoaiSanPham WHERE MaLoai = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -65,7 +65,6 @@ public class LoaiSanPhamDAO {
         }
     }
 
-    // Find a product category by ID
     public LoaiSanPham getLoaiSanPhamById(int maLoai) throws SQLException {
         String sql = "SELECT * FROM LoaiSanPham WHERE MaLoai = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {

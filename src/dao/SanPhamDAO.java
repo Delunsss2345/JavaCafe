@@ -1,5 +1,5 @@
 package dao;
-
+//Người làm Phạm Thanh Huy
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -84,45 +84,65 @@ public class SanPhamDAO {
     }
 
     
-    // Cập nhật sản phẩm
     public boolean updateSanPham(SanPham sanPham) {
+      
         String sql = "UPDATE SanPham SET TenSanPham = ?, MaLoai = ?, Gia = ?, "
                    + "MoTa = ?, TrangThai = ?, HinhAnh = ?, NgayCapNhat = GETDATE() "
                    + "WHERE MaSanPham = ?";
-        
+
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+           
+            String trangThai = sanPham.getTrangThai();
+            if (!trangThai.equals("Đang bán") && !trangThai.equals("Hết bán")) {
+                throw new SQLException("Trạng thái không hợp lệ! Chỉ chấp nhận: 'Đang bán' hoặc 'Hết bán'.");
+            }
+
+           
+            String checkLoaiSql = "SELECT COUNT(*) FROM LoaiSanPham WHERE MaLoai = ?";
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkLoaiSql)) {
+                checkStmt.setInt(1, sanPham.getMaLoai());
+                ResultSet rs = checkStmt.executeQuery();
+                if (rs.next() && rs.getInt(1) == 0) {
+                    throw new SQLException("Mã loại sản phẩm không tồn tại trong hệ thống.");
+                }
+            }
+
             
             stmt.setString(1, sanPham.getTenSanPham());
             stmt.setInt(2, sanPham.getMaLoai());
             stmt.setBigDecimal(3, sanPham.getGia());
             stmt.setString(4, sanPham.getMoTa());
-            stmt.setString(5, sanPham.getTrangThai());
+            stmt.setString(5, trangThai);
             stmt.setString(6, sanPham.getHinhAnh());
             stmt.setInt(7, sanPham.getMaSanPham());
+
             
             return stmt.executeUpdate() > 0;
+
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi cập nhật sản phẩm: " + sanPham.getMaSanPham(), e);
+            return false;
         }
-        return false;
     }
+
     
-    // Xóa sản phẩm (soft delete)
     public boolean deleteSanPham(int maSanPham) {
-        String sql = "UPDATE SanPham SET TrangThai = 'Ngừng bán', NgayCapNhat = GETDATE() "
+        String sql = "UPDATE SanPham SET TrangThai = 'Hết bán', NgayCapNhat = GETDATE() "
                    + "WHERE MaSanPham = ?";
-        
+
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setInt(1, maSanPham);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi xóa sản phẩm: " + maSanPham, e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi xóa sản phẩm (soft delete): " + maSanPham, e);
+            return false;
         }
-        return false;
     }
+
     
     // Tìm kiếm sản phẩm
     public List<SanPham> searchSanPham(String keyword) {
