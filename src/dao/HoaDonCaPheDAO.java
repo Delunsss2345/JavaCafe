@@ -1,18 +1,16 @@
 package dao;
 
-import entities.ChiTietHoaDonCaPhe;
 import entities.HoaDon;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import ConnectDB.DatabaseConnection;
-
 public class HoaDonCaPheDAO {
     private Connection conn;
 
     public HoaDonCaPheDAO(Connection conn) {
+<<<<<<< HEAD
         super();
         this.conn = conn;
     }
@@ -53,13 +51,38 @@ public class HoaDonCaPheDAO {
                         rs.getInt("MaKH") // Mã khách hàng (nếu có)
                 );
                 ds.add(hd);
+=======
+        this.conn = conn;
+    }
+
+    // Thêm hóa đơn mới - để SQL Server tự tăng MaHD
+    public int insertHoaDon(HoaDon hd) {
+        String sql = "INSERT INTO HoaDon (MaDH, NgayTao, TongTien, TienKhachTra, TienThua, MaNV) VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, hd.getMaDH());
+            ps.setTimestamp(2, Timestamp.valueOf(hd.getNgayTao()));
+            ps.setDouble(3, hd.getTongTien());
+            ps.setDouble(4, hd.getTienKhachTra());
+            ps.setDouble(5, hd.getTienThua());
+            ps.setInt(6, hd.getMaNV());
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    int maHD = rs.getInt(1);
+                    hd.setMaHD(maHD); // Gán vào đối tượng
+                    return maHD;
+                }
+>>>>>>> 9f7c4dae8014534fdc391636cd6b0e6eb16f1e62
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return ds;
+        return -1;
     }
 
+<<<<<<< HEAD
     // Lấy hóa đơn theo mã
     public HoaDon getHoaDonByID(int maHoaDon) {
         String sql = "SELECT * FROM HoaDon WHERE MaHD = ?";
@@ -75,6 +98,49 @@ public class HoaDonCaPheDAO {
                         rs.getDouble("TienThua"),
                         rs.getInt("MaNV"),
                         rs.getInt("MaKH")
+=======
+    public List<Object[]> getAllHoaDon() {
+        List<Object[]> list = new ArrayList<>();
+        String sql = """
+            SELECT hd.MaHD, hd.NgayTao, kh.TenKH, hd.TongTien
+            FROM HoaDon hd
+            JOIN DonHang dh ON hd.MaDH = dh.MaDH
+            JOIN KhachHang kh ON dh.MaKH = kh.MaKH
+            ORDER BY hd.NgayTao DESC
+        """;
+
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                Object[] row = new Object[] {
+                    rs.getInt("MaHD"),
+                    rs.getTimestamp("NgayTao").toLocalDateTime(),
+                    rs.getString("TenKH"),
+                    rs.getDouble("TongTien")
+                };
+                list.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public HoaDon getHoaDonByMaHD(int maHD) {
+        String sql = "SELECT * FROM HoaDon WHERE MaHD = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, maHD);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return new HoaDon(
+                    rs.getInt("MaHD"),
+                    rs.getInt("MaDH"),
+                    rs.getTimestamp("NgayTao").toLocalDateTime(),
+                    rs.getDouble("TongTien"),
+                    rs.getDouble("TienKhachTra"),
+                    rs.getDouble("TienThua"),
+                    rs.getInt("MaNV")
+>>>>>>> 9f7c4dae8014534fdc391636cd6b0e6eb16f1e62
                 );
             }
         } catch (SQLException e) {
@@ -83,17 +149,25 @@ public class HoaDonCaPheDAO {
         return null;
     }
 
+<<<<<<< HEAD
     // Xóa hóa đơn theo mã
     public boolean deleteHoaDon(int maHoaDon) {
         String sql = "DELETE FROM HoaDon WHERE MaHD = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, maHoaDon);
+=======
+    public boolean deleteHoaDon(int maHD) {
+        String sql = "DELETE FROM HoaDon WHERE MaHD = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, maHD);
+>>>>>>> 9f7c4dae8014534fdc391636cd6b0e6eb16f1e62
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
+<<<<<<< HEAD
     // Phương thức lấy tên khách hàng theo MaKH
     public String getTenKhachHangByMaKH(int maKH) throws SQLException {
         String tenKhachHang = "";
@@ -157,4 +231,6 @@ public class HoaDonCaPheDAO {
         }
     }
 
+=======
+>>>>>>> 9f7c4dae8014534fdc391636cd6b0e6eb16f1e62
 }

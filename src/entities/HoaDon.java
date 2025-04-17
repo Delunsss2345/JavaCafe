@@ -3,6 +3,7 @@ package entities;
 import java.time.LocalDateTime;
 
 public class HoaDon {
+<<<<<<< HEAD
     private int maHoaDon; 
     private LocalDateTime ngayLap; 
     private double tongTien; 
@@ -34,16 +35,54 @@ public class HoaDon {
 
     public void setMaHoaDon(int maHoaDon) {
         this.maHoaDon = maHoaDon;
+=======
+    private int maHD;
+    private int maDH; //bo
+    private LocalDateTime ngayTao;
+    private double tongTien;
+    private double tienKhachTra;	
+    private double tienThua;
+    private int maNV; //bo
+    private int maKH;
+
+    public HoaDon(int maHD, int maDH, LocalDateTime ngayTao, double tongTien, double tienKhachTra, double tienThua, int maNV) {
+        this.maHD = maHD;
+        this.maDH = maDH;
+        this.ngayTao = ngayTao;
+        this.tongTien = tongTien;
+        this.tienKhachTra = tienKhachTra;
+        this.tienThua = tienThua;
+        this.maNV = maNV;
     }
 
-    public LocalDateTime getNgayLap() {
-        return ngayLap;
+    public int getMaHD() {
+        return maHD;
     }
 
-    public void setNgayLap(LocalDateTime ngayLap) {
-        this.ngayLap = ngayLap;
+    public void setMaHD(int maHD) {
+        this.maHD = maHD;
+>>>>>>> 9f7c4dae8014534fdc391636cd6b0e6eb16f1e62
     }
 
+    public int getMaDH() {
+        return maDH;
+    }
+
+    public void setMaDH(int maDH) {
+        this.maDH = maDH;
+    }
+
+<<<<<<< HEAD
+=======
+    public LocalDateTime getNgayTao() {
+        return ngayTao;
+    }
+
+    public void setNgayTao(LocalDateTime ngayTao) {
+        this.ngayTao = ngayTao;
+    }
+
+>>>>>>> 9f7c4dae8014534fdc391636cd6b0e6eb16f1e62
     public double getTongTien() {
         return tongTien;
     }
@@ -54,6 +93,7 @@ public class HoaDon {
 
     public double getTienKhachTra() {
         return tienKhachTra;
+<<<<<<< HEAD
     }
 
     public void setTienKhachTra(double tienKhachTra) {
@@ -95,5 +135,34 @@ public class HoaDon {
                 ", maNhanVien=" + maNhanVien +
                 ", maKhachHang=" + maKhachHang +
                 '}';
+=======
+>>>>>>> 9f7c4dae8014534fdc391636cd6b0e6eb16f1e62
     }
+
+    public void setTienKhachTra(double tienKhachTra) {
+        this.tienKhachTra = tienKhachTra;
+    }
+
+    public double getTienThua() {
+        return tienThua;
+    }
+
+    public void setTienThua(double tienThua) {
+        this.tienThua = tienThua;
+    }
+
+    public int getMaNV() {
+        return maNV;
+    }
+
+    public void setMaNV(int maNV) {
+        this.maNV = maNV;
+    }
+
+	@Override
+	public String toString() {
+		return "HoaDon [maHD=" + maHD + ", maDH=" + maDH + ", ngayTao=" + ngayTao + ", tongTien=" + tongTien
+				+ ", tienKhachTra=" + tienKhachTra + ", tienThua=" + tienThua + ", maNV=" + maNV + "]";
+	}
+    
 }

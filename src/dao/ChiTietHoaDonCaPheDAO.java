@@ -1,4 +1,3 @@
-//Nguyễn Tuấn Phát
 package dao;
 
 import entities.ChiTietHoaDonCaPhe;
@@ -8,12 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChiTietHoaDonCaPheDAO {
-    private Connection conn;
+	private Connection conn;
 
-    public ChiTietHoaDonCaPheDAO(Connection conn) {
-        this.conn = conn;
-    }
+	public ChiTietHoaDonCaPheDAO(Connection conn) {
+		this.conn = conn;
+	}
 
+<<<<<<< HEAD
     // Thêm một chi tiết hóa đơn
     public boolean insertChiTiet(ChiTietHoaDonCaPhe ct) {
         String sql = "INSERT INTO ChiTietHoaDon (maHoaDon, maSanPham, tenSanPham, soLuong, donGia, thanhTien) " +
@@ -56,16 +56,55 @@ public class ChiTietHoaDonCaPheDAO {
 //        }
 //        return ds;
 //    }
+=======
+	// Thêm một chi tiết hóa đơn
+	public boolean insertChiTiet(ChiTietHoaDonCaPhe ct) {
+		String sql = "INSERT INTO ChiTietHoaDon (MaHD, MaSP, TenSanPham, SoLuong, DonGia, ThanhTien) "
+				+ "VALUES (?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, ct.getMaHoaDon());
+			ps.setString(2, ct.getMaSP());
+			ps.setString(3, ct.getTenSP());
+			ps.setInt(4, ct.getSoLuong());
+			ps.setDouble(5, ct.getDonGia());
+			ps.setDouble(6, ct.getThanhTien());
+			return ps.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 
-    // Xóa tất cả chi tiết hóa đơn theo mã hóa đơn
-    public boolean deleteChiTietByMaHoaDon(String maHoaDon) {
-        String sql = "DELETE FROM ChiTietHoaDon WHERE maHoaDon = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, maHoaDon);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+	// Lấy danh sách chi tiết hóa đơn theo mã hóa đơn
+	public List<ChiTietHoaDonCaPhe> getChiTietByMaHoaDon(String maHoaDon) {
+		List<ChiTietHoaDonCaPhe> ds = new ArrayList<>();
+		String sql = "SELECT * FROM ChiTietHoaDon WHERE MaHD = ?";
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, maHoaDon);
+			ResultSet rs = ps.executeQuery();
+
+			while (rs.next()) {
+				ChiTietHoaDonCaPhe ct = new ChiTietHoaDonCaPhe(rs.getString("MaHD"), rs.getString("MaSP"),
+						rs.getString("TenSanPham"), rs.getInt("SoLuong"), rs.getDouble("DonGia"),
+						rs.getDouble("ThanhTien"));
+				ds.add(ct);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return ds;
+	}
+>>>>>>> 9f7c4dae8014534fdc391636cd6b0e6eb16f1e62
+
+	// Xóa tất cả chi tiết hóa đơn theo mã hóa đơn
+	public boolean deleteChiTietByMaHoaDon(String maHoaDon) {
+		String sql = "DELETE FROM ChiTietHoaDon WHERE MaHD = ?";
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, maHoaDon);
+			return ps.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 }

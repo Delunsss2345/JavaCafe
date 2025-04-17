@@ -21,7 +21,7 @@ public class frmLapHoaDon extends JFrame {
     public frmLapHoaDon(List<ChiTietHoaDonCaPhe> gioHang, double tongTien) {
         this.gioHang = gioHang;
         this.tongTien = tongTien;
-
+        
         setTitle("Lập Hóa Đơn");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -92,7 +92,7 @@ public class frmLapHoaDon extends JFrame {
             for (ChiTietHoaDonCaPhe ct : gioHang) {
                 model.addRow(new Object[]{
                     stt++,
-                    ct.getTenSanPham(),
+                    ct.getTenSP(),
                     String.format("%,.0f VNĐ", ct.getDonGia()),
                     ct.getSoLuong(),
                     String.format("%,.0f VNĐ", ct.getThanhTien())
@@ -119,7 +119,7 @@ public class frmLapHoaDon extends JFrame {
         LocalDateTime gioVao = LocalDateTime.now();
         LocalDateTime gioRa = LocalDateTime.now();
 
-        frmChiTietHoaDon chiTietForm = new frmChiTietHoaDon(maNV, tenNV, maKH, tenKH, tongTien, gioRa, gioRa, gioHang);
+        frmChiTietHoaDon chiTietForm = new frmChiTietHoaDon(maNV, tenNV, maKH, tenKH, tongTien, gioRa, gioRa, gioHang, getDefaultCloseOperation(), tongTien);
         chiTietForm.setVisible(true);
     }
 
