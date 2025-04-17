@@ -26,10 +26,11 @@ import entities.HoaDon;
 
 public class frmChiTietHoaDon extends JFrame {
     private JTextArea txtChiTiet;
+	public boolean inResult;
 
     public frmChiTietHoaDon(String maNV, String	 tenNV, String maKH, String tenKH, double tongTien,
                             LocalDateTime gioVao, LocalDateTime gioRa,
-                            List<ChiTietHoaDonCaPhe> danhSachMon,
+                            List<ChiTietHoaDonCaPhe> danhSachMon,	
                             int maDH, double tienKhachTra) {
 
         setTitle("Chi Tiết Hóa Đơn");
@@ -61,7 +62,7 @@ public class frmChiTietHoaDon extends JFrame {
 
         for (ChiTietHoaDonCaPhe ct : danhSachMon) {
             sb.append(String.format("- %s x%d : %,.0f VNĐ\n",
-                    ct.getTenSanPham(),
+                    ct.getTenSP(),
                     ct.getSoLuong(),
                     ct.getThanhTien()));
         }
@@ -107,6 +108,7 @@ public class frmChiTietHoaDon extends JFrame {
                         }
                         JOptionPane.showMessageDialog(this, "In hóa đơn & lưu vào hệ thống thành công!");
                         this.dispose(); // Đóng form
+                        inResult = true;
                     } else {
                         JOptionPane.showMessageDialog(this, "Không thể lưu hóa đơn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                     }
