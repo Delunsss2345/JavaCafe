@@ -5,6 +5,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -14,14 +18,19 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 
+import ConnectDB.DatabaseConnection;
+import dao.ChiTietHoaDonCaPheDAO;
+import dao.HoaDonCaPheDAO;
 import entities.ChiTietHoaDonCaPhe;
+import entities.HoaDon;
 
 public class frmChiTietHoaDon extends JFrame {
     private JTextArea txtChiTiet;
 
-    public frmChiTietHoaDon(String maNV, String tenNV, String maKH, String tenKH, double tongTien,
+    public frmChiTietHoaDon(String maNV, String	 tenNV, String maKH, String tenKH, double tongTien,
                             LocalDateTime gioVao, LocalDateTime gioRa,
-                            List<ChiTietHoaDonCaPhe> danhSachMon) {
+                            List<ChiTietHoaDonCaPhe> danhSachMon,
+                            int maDH, double tienKhachTra) {
 
         setTitle("Chi Tiết Hóa Đơn");
         setSize(500, 700);
@@ -79,13 +88,34 @@ public class frmChiTietHoaDon extends JFrame {
             try {
                 boolean done = txtChiTiet.print();
                 if (done) {
-                    JOptionPane.showMessageDialog(this, "In hóa đơn thành công!");
+                    // Sau khi in, lưu hóa đơn vào CSDL
+                    Connection conn = DatabaseConnection.getInstance().getConnection();
+                    HoaDonCaPheDAO hoaDonDAO = new HoaDonCaPheDAO(conn);
+                    ChiTietHoaDonCaPheDAO chiTietDAO = new ChiTietHoaDonCaPheDAO(conn);
+
+                    int maNVInt = Integer.parseInt(maNV);
+                    HoaDon hoaDon = new HoaDon(
+                        0, maDH, gioRa, tongTien, tienKhachTra,
+                        tienKhachTra - tongTien, maNVInt
+                    );
+
+                    int maHD = hoaDonDAO.insertHoaDon(hoaDon);
+                    if (maHD > 0) {
+                        for (ChiTietHoaDonCaPhe ct : danhSachMon) {
+                            ct.setMaHoaDon(String.valueOf(maHD));
+                            chiTietDAO.insertChiTiet(ct);
+                        }
+                        JOptionPane.showMessageDialog(this, "In hóa đơn & lưu vào hệ thống thành công!");
+                        this.dispose(); // Đóng form
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Không thể lưu hóa đơn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
                 } else {
                     JOptionPane.showMessageDialog(this, "In hóa đơn bị hủy.", "Thông báo", JOptionPane.WARNING_MESSAGE);
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Lỗi khi in hóa đơn: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Lỗi khi in hoặc lưu hóa đơn: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
