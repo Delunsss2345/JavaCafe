@@ -1,19 +1,20 @@
-//Nguyễn Tuấn Phát
 package entities;
 
 public class ChiTietHoaDonCaPhe {
-    private String maHoaDon;
-    private String maSanPham;
-    private String tenSanPham;
-    private int soLuong;
-    private double donGia;
-    private double thanhTien;
+    private int maCTHD;           
+    private int maHoaDon;          
+    private int maSanPham;         
+    private String tenSanPham;     
+    private int soLuong;          
+    private double donGia;        
+    private double thanhTien;      
 
     public ChiTietHoaDonCaPhe() {
     }
 
-    public ChiTietHoaDonCaPhe(String maHoaDon, String maSanPham, String tenSanPham,
+    public ChiTietHoaDonCaPhe(int maCTHD, int maHoaDon, int maSanPham, String tenSanPham,
                                int soLuong, double donGia, double thanhTien) {
+        this.maCTHD = maCTHD;
         this.maHoaDon = maHoaDon;
         this.maSanPham = maSanPham;
         this.tenSanPham = tenSanPham;
@@ -23,19 +24,27 @@ public class ChiTietHoaDonCaPhe {
     }
 
     // Getters & Setters
-    public String getMaHoaDon() {
+    public int getMaCTHD() {
+        return maCTHD;
+    }
+
+    public void setMaCTHD(int maCTHD) {
+        this.maCTHD = maCTHD;
+    }
+
+    public int getMaHoaDon() {
         return maHoaDon;
     }
 
-    public void setMaHoaDon(String maHoaDon) {
+    public void setMaHoaDon(int maHoaDon) {
         this.maHoaDon = maHoaDon;
     }
 
-    public String getMaSanPham() {
+    public int getMaSanPham() {
         return maSanPham;
     }
 
-    public void setMaSanPham(String maSanPham) {
+    public void setMaSanPham(int maSanPham) {
         this.maSanPham = maSanPham;
     }
 
@@ -74,8 +83,9 @@ public class ChiTietHoaDonCaPhe {
     @Override
     public String toString() {
         return "ChiTietHoaDonCaPhe{" +
-                "maHoaDon='" + maHoaDon + '\'' +
-                ", maSanPham='" + maSanPham + '\'' +
+                "maCTHD=" + maCTHD +
+                ", maHoaDon=" + maHoaDon +
+                ", maSanPham=" + maSanPham +
                 ", tenSanPham='" + tenSanPham + '\'' +
                 ", soLuong=" + soLuong +
                 ", donGia=" + donGia +

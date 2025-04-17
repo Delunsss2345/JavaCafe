@@ -17,7 +17,7 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
     private ManHinhTrangChu manHinhTrangChu;
     private JPanel quanLySanPham;
     private JPanel quanLyHoaDon;
-    private JPanel baoCaoDoanhThu;
+    private JPanel frmQuanLyHoaDon;
 
     public HeThongQuanLyQuanCaPhe() {
         // Thiết lập frame chính
@@ -34,14 +34,15 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         // Khởi tạo các panel cho từng màn hình
         manHinhTrangChu = new ManHinhTrangChu();
         quanLySanPham = new QuanLySanPham();
-////        quanLyHoaDon = new QuanLyDonHang();
+        quanLyHoaDon = new frmQuanLyHoaDon();
+    	
 //        baoCaoDoanhThu = new BaoCaoDoanhThu();
 
         // Thêm các panel vào panelNoiDung
+        panelNoiDung.add(quanLyHoaDon, "HoaDon");
         panelNoiDung.add(manHinhTrangChu, "TrangChu");
         panelNoiDung.add(quanLySanPham, "SanPham");
-////        panelNoiDung.add(quanLyHoaDon, "HoaDon");
-//        panelNoiDung.add(baoCaoDoanhThu, "DoanhThu");
+////        panelNoiDung.add(baoCaoDoanhThu, "DoanhThu");
 
         // Tạo panel menu ở bên trái
         panelMenu = new JPanel();
@@ -82,7 +83,6 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
 
         // Hiển thị màn hình trang chủ mặc định
         hienThiTrangChu();
-
         setVisible(true);
     }
 

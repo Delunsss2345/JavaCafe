@@ -3,7 +3,10 @@ package gui;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
+
+import entities.ChiTietHoaDonCaPhe;
 import entities.SanPham;
 
 import dao.SanPhamDAO;
@@ -183,23 +186,36 @@ public class ManHinhTrangChu extends JPanel {
         }
     }
 
-    private void thanhToan() {
+    void thanhToan() {
         if (modelGioHang.getRowCount() == 0) {
             JOptionPane.showMessageDialog(this, "Giỏ hàng trống!", "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
+
+        // Tạo danh sách chi tiết hóa đơn từ giỏ hàng
+        List<ChiTietHoaDonCaPhe> gioHang = new ArrayList<>();
         double tongTien = 0;
+
         for (int i = 0; i < modelGioHang.getRowCount(); i++) {
-            String thanhTien = modelGioHang.getValueAt(i, 3).toString().replaceAll("[^\\d.]", "");
-            tongTien += Double.parseDouble(thanhTien);
+            String tenSP = modelGioHang.getValueAt(i, 0).toString();
+            String donGiaStr = modelGioHang.getValueAt(i, 1).toString().replaceAll("[^\\d.]", "");
+            String soLuongStr = modelGioHang.getValueAt(i, 2).toString();
+
+            double donGia = Double.parseDouble(donGiaStr);
+            int soLuong = Integer.parseInt(soLuongStr);
+            double thanhTien = donGia * soLuong;
+            tongTien += thanhTien;
+
+            ChiTietHoaDonCaPhe ct = new ChiTietHoaDonCaPhe();
+            ct.setTenSanPham(tenSP);
+            ct.setDonGia(donGia);
+            ct.setSoLuong(soLuong);
+            ct.setThanhTien(thanhTien);
+
+            gioHang.add(ct);
         }
-        
-        JOptionPane.showMessageDialog(this, 
-            "Thanh toán thành công!\nTổng tiền: " + String.format("%,.0f VNĐ", tongTien), 
-            "Thông báo", 
-            JOptionPane.INFORMATION_MESSAGE);
-        
-        modelGioHang.setRowCount(0);
+
+        frmLapHoaDon frm = new frmLapHoaDon(gioHang, tongTien);
+        frm.setVisible(true);
     }
 }

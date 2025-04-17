@@ -1,160 +1,232 @@
 package gui;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.RoundRectangle2D;
+import javax.swing.*;
+import java.awt.*;
+import java.net.URL;
+
 public class Login extends JFrame {
-    private JPanel jPanel1;
-    private JPanel jPanel2;
-    private JPanel jPanel3;
-    private JLabel jLabel1;
-    private JLabel jLabel2;
-    private JLabel jLabel3;
-    private JLabel jLabel4;
-    private JLabel jLabel5;
-    private JLabel jLabel6;
+    private JPanel mainPanel;
+    private JPanel leftPanel;
+    private JPanel rightPanel;
+    private JLabel titleLabel;
+    private JLabel logoLabel;
+    private JLabel usernameLabel;
+    private JLabel passwordLabel;
+    private JLabel forgotPasswordLabel;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
+    private JCheckBox rememberMeCheckbox;
+    private ImageIcon logoIcon;
+    private ImageIcon userIcon;
+    private ImageIcon lockIcon;
 
     public Login() {
         initComponents();
+        setLocationRelativeTo(null); // Đặt cửa sổ ở giữa màn hình
     }
 
     private void initComponents() {
+        // Thiết lập cửa sổ
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setBackground(new Color(102, 255, 255));
-        setPreferredSize(new Dimension(950, 900));
-       
-        jPanel1 = new JPanel();
-        jPanel2 = new JPanel();
-        jPanel3 = new JPanel();
-        jLabel1 = new JLabel();
-        jLabel2 = new JLabel();
-        jLabel3 = new JLabel();
-        jLabel4 = new JLabel();
-        jLabel5 = new JLabel();
-        jLabel6 = new JLabel();
+        setTitle("Đăng Nhập - Hệ Thống Quản Lý Quán Cafe");
+        setSize(1200, 550);
+        setResizable(false);
+        
+        // Khởi tạo các thành phần
+        mainPanel = new JPanel(new GridLayout(1, 2));
+        leftPanel = createLeftPanel();
+        rightPanel = createRightPanel();
+        
+        // Thêm các panel vào panel chính
+        mainPanel.add(leftPanel);
+        mainPanel.add(rightPanel);
+        
+        // Thêm panel chính vào frame
+        getContentPane().add(mainPanel);
+    }
+    
+    private JPanel createLeftPanel() {
+        JPanel panel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (logoIcon != null) {
+                    Image img = logoIcon.getImage();
+                    g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
+                }
+            }
+        };
+
+        panel.setLayout(new BorderLayout());
+        panel.setBackground(new Color(255, 102, 0));
+
+        try {
+            URL imageUrl = getClass().getResource("/images/background-cafe.png");
+
+            if (imageUrl != null) {
+                logoIcon = new ImageIcon(imageUrl);
+            } else {
+                System.out.println("Không tìm thấy ảnh!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Thêm tiêu đề phía dưới
+        titleLabel = new JLabel("COFFEE CAFE");
+        titleLabel.setFont(new Font("Segoe Script", Font.BOLD, 40));
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(titleLabel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+
+    
+    private JPanel createRightPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(new EmptyBorder(40, 50, 40, 50));
+        
+        // Tiêu đề đăng nhập
+        JLabel loginTitle = new JLabel("ĐĂNG NHẬP");
+        loginTitle.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        loginTitle.setForeground(new Color(51, 51, 51));
+        loginTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        // Tiêu đề phụ
+        JLabel subTitle = new JLabel("Vui lòng đăng nhập để tiếp tục");
+        subTitle.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subTitle.setForeground(new Color(102, 102, 102));
+        subTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        // Panel đệm
+        JPanel spacer1 = new JPanel();
+        spacer1.setMaximumSize(new Dimension(Short.MAX_VALUE, 30));
+        spacer1.setOpaque(false);
+        
+        // Panel đệm
+        JPanel spacer2 = new JPanel();
+        spacer2.setMaximumSize(new Dimension(Short.MAX_VALUE, 15));
+        spacer2.setOpaque(false);
+        
+        // Tạo trường tên đăng nhập
+        JPanel usernamePanel = createInputPanel("Tài khoản", "/resources/user-icon.png");
         usernameField = new JTextField();
+        usernameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        usernameField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        usernamePanel.add(usernameField);
+        
+     
+        JPanel passwordPanel = createInputPanel("Mật khẩu", "/resources/lock-icon.png");
         passwordField = new JPasswordField();
-        loginButton = new JButton();
-
-        jPanel2.setBackground(new Color(255, 102, 0));
-
-        jLabel5.setFont(new Font("Segoe Script", 1, 48));
-        jLabel5.setForeground(new Color(255, 255, 255));
-        jLabel5.setText("COFFE CAFE");
-
-        GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(77, Short.MAX_VALUE)
-                .addComponent(jLabel5, GroupLayout.PREFERRED_SIZE, 372, GroupLayout.PREFERRED_SIZE)
-                .addGap(70, 70, 70))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(193, 193, 193)
-                .addComponent(jLabel5, GroupLayout.PREFERRED_SIZE, 212, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanel3.setBackground(new Color(255, 255, 255));
-
-        jLabel2.setFont(new Font("Segoe UI", 0, 14));
-        jLabel2.setText("Tài Khoản");
-
-        jLabel3.setFont(new Font("Segoe UI", 0, 14));
-        jLabel3.setText("Mật Khẩu");
-
-        loginButton.setText("Đăng Nhập");
+        passwordField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        passwordField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        passwordPanel.add(passwordField);
+        
+      
+        JPanel optionsPanel = new JPanel();
+        optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.X_AXIS));
+        optionsPanel.setOpaque(false);
+        optionsPanel.setMaximumSize(new Dimension(Short.MAX_VALUE, 30));
+        
+      
+        
+        loginButton = new JButton("ĐĂNG NHẬP");
+        loginButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setBackground(new Color(255, 102, 0));
+        loginButton.setBorderPainted(false);
+        loginButton.setFocusPainted(false);
+        loginButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        loginButton.setMaximumSize(new Dimension(250, 40));
+        
+       
+        loginButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                loginButton.setBackground(new Color(230, 92, 0));
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                loginButton.setBackground(new Color(255, 102, 0));
+            }
+        });
+        
+        // Thêm sự kiện cho nút đăng nhập
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 handleLogin(evt);
             }
         });
-
-        jLabel6.setFont(new Font("Segoe UI", 3, 48));
-        jLabel6.setText("LOG IN");
-
-        GroupLayout jPanel3Layout = new GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(42, 42, 42)
-                        .addGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, 316, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2, GroupLayout.PREFERRED_SIZE, 75, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(usernameField, GroupLayout.PREFERRED_SIZE, 316, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3)))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(53, 53, 53)
-                        .addComponent(jLabel4)))
-                .addContainerGap(25, Short.MAX_VALUE))
-            .addGroup(GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(112, Short.MAX_VALUE)
-                .addGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel6, GroupLayout.PREFERRED_SIZE, 173, GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel1)
-                        .addGap(80, 80, 80))
-                    .addGroup(GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                        .addComponent(loginButton, GroupLayout.PREFERRED_SIZE, 125, GroupLayout.PREFERRED_SIZE)
-                        .addGap(109, 109, 109))))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel1, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6, GroupLayout.PREFERRED_SIZE, 66, GroupLayout.PREFERRED_SIZE))
-                .addGap(36, 36, 36)
-                .addComponent(jLabel2)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(usernameField, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3, GroupLayout.PREFERRED_SIZE, 22, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(loginButton, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel4)
-                .addGap(5, 5, 5))
-        );
-
-        GroupLayout layout = new GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jPanel3, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-
-        pack();
+        
+      
+        panel.add(loginTitle);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(subTitle);
+        panel.add(spacer1);
+        panel.add(usernamePanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        panel.add(passwordPanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 15)));
+        panel.add(optionsPanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 30)));
+        panel.add(loginButton);
+        panel.add(Box.createVerticalGlue());
+        
+        return panel;
+    }
+    
+    private JPanel createInputPanel(String labelText, String iconPath) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
+        panel.setMaximumSize(new Dimension(Short.MAX_VALUE, 70));
+        
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        label.setForeground(new Color(51, 51, 51));
+        
+        JPanel inputContainer = new JPanel();
+        inputContainer.setLayout(new BoxLayout(inputContainer, BoxLayout.X_AXIS));
+        inputContainer.setOpaque(false);
+        
+    
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource(iconPath));
+            if (icon.getIconWidth() > 0) {
+                Image img = icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+                icon = new ImageIcon(img);
+                JLabel iconLabel = new JLabel(icon);
+                iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
+                inputContainer.add(iconLabel);
+            }
+        } catch (Exception e) {
+            
+        }
+        
+        panel.add(label);
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+        panel.add(inputContainer);
+        
+        return panel;
     }
 
     private void handleLogin(ActionEvent evt) {
@@ -165,19 +237,20 @@ public class Login extends JFrame {
         String validPassword = "123";
 
         if (username.equals(validUsername) && password.equals(validPassword)) {
-            JOptionPane.showMessageDialog(this, "Login successful!");
+            JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
             HeThongQuanLyQuanCaPhe cafeSys = new HeThongQuanLyQuanCaPhe();
             cafeSys.setVisible(true);
             this.dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Invalid username or password.");
-            usernameField.setText("");
+            JOptionPane.showMessageDialog(this, "Tên đăng nhập hoặc mật khẩu không đúng.", "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
             passwordField.setText("");
-            usernameField.requestFocus();
+            passwordField.requestFocus();
         }
     }
 
     public static void main(String[] args) {
+
+        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 new Login().setVisible(true);

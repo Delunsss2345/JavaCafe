@@ -1,11 +1,9 @@
-//Nguyễn Tuấn Phát
 package dao;
 
 import entities.ChiTietHoaDonCaPhe;
 import entities.HoaDon;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,23 +13,21 @@ public class HoaDonCaPheDAO {
     private Connection conn;
 
     public HoaDonCaPheDAO(Connection conn) {
-		super();
-		this.conn = conn;
-	}
+        super();
+        this.conn = conn;
+    }
 
-
-	// Thêm hóa đơn vào database
+    // Thêm hóa đơn vào database
     public boolean insertHoaDon(HoaDon hd) {
-        String sql = "INSERT INTO HoaDon (maHoaDon, ngayLap, maNhanVien, tenNhanVien, maKhachHang, tenKhachHang, tongTien) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO HoaDon (NgayTao, TongTien, TienKhachTra, TienThua, MaNV, MaKH) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, hd.getMaHoaDon());
-            ps.setTimestamp(2, Timestamp.valueOf(hd.getNgayLap()));
-            ps.setString(3, hd.getMaNhanVien());
-            ps.setString(4, hd.getTenNhanVien());
-            ps.setString(5, hd.getMaKhachHang());
-            ps.setString(6, hd.getTenKhachHang());
-            ps.setDouble(7, hd.getTongTien());
+            ps.setTimestamp(1, Timestamp.valueOf(hd.getNgayLap()));
+            ps.setDouble(2, hd.getTongTien());
+            ps.setDouble(3, hd.getTienKhachTra());
+            ps.setDouble(4, hd.getTienThua());
+            ps.setInt(5, hd.getMaNhanVien());
+            ps.setInt(6, hd.getMaKhachHang()); // MaKH có thể là NULL, nếu không có khách hàng thì đặt thành NULL
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -42,19 +38,19 @@ public class HoaDonCaPheDAO {
     // Lấy tất cả hóa đơn
     public List<HoaDon> getAllHoaDon() {
         List<HoaDon> ds = new ArrayList<>();
-        String sql = "SELECT * FROM HoaDon ORDER BY ngayLap DESC";
+        String sql = "SELECT * FROM HoaDon";
         try (Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
                 HoaDon hd = new HoaDon(
-                        rs.getString("maHoaDon"),
-                        rs.getTimestamp("ngayLap").toLocalDateTime(),
-                        rs.getString("maNhanVien"),
-                        rs.getString("tenNhanVien"),
-                        rs.getString("maKhachHang"),
-                        rs.getString("tenKhachHang"),
-                        rs.getDouble("tongTien")
+                        rs.getInt("MaHD"), // Mã hóa đơn (ID)
+                        rs.getTimestamp("NgayTao").toLocalDateTime(), // Ngày tạo
+                        rs.getDouble("TongTien"), // Tổng tiền
+                        rs.getDouble("TienKhachTra"), // Tiền khách trả
+                        rs.getDouble("TienThua"), // Tiền thừa
+                        rs.getInt("MaNV"), // Mã nhân viên
+                        rs.getInt("MaKH") // Mã khách hàng (nếu có)
                 );
                 ds.add(hd);
             }
@@ -65,20 +61,20 @@ public class HoaDonCaPheDAO {
     }
 
     // Lấy hóa đơn theo mã
-    public HoaDon getHoaDonByID(String maHoaDon) {
-        String sql = "SELECT * FROM HoaDon WHERE maHoaDon = ?";
+    public HoaDon getHoaDonByID(int maHoaDon) {
+        String sql = "SELECT * FROM HoaDon WHERE MaHD = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, maHoaDon);
+            ps.setInt(1, maHoaDon);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return new HoaDon(
-                        rs.getString("maHoaDon"),
-                        rs.getTimestamp("ngayLap").toLocalDateTime(),
-                        rs.getString("maNhanVien"),
-                        rs.getString("tenNhanVien"),
-                        rs.getString("maKhachHang"),
-                        rs.getString("tenKhachHang"),
-                        rs.getDouble("tongTien")
+                        rs.getInt("MaHD"),
+                        rs.getTimestamp("NgayTao").toLocalDateTime(),
+                        rs.getDouble("TongTien"),
+                        rs.getDouble("TienKhachTra"),
+                        rs.getDouble("TienThua"),
+                        rs.getInt("MaNV"),
+                        rs.getInt("MaKH")
                 );
             }
         } catch (SQLException e) {
@@ -88,30 +84,68 @@ public class HoaDonCaPheDAO {
     }
 
     // Xóa hóa đơn theo mã
-    public boolean deleteHoaDon(String maHoaDon) {
-        String sql = "DELETE FROM HoaDon WHERE maHoaDon = ?";
+    public boolean deleteHoaDon(int maHoaDon) {
+        String sql = "DELETE FROM HoaDon WHERE MaHD = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, maHoaDon);
+            ps.setInt(1, maHoaDon);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
+    // Phương thức lấy tên khách hàng theo MaKH
+    public String getTenKhachHangByMaKH(int maKH) throws SQLException {
+        String tenKhachHang = "";
+        String sql = "SELECT TenKhachHang FROM KhachHang WHERE MaKH = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, maKH);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    tenKhachHang = rs.getString("TenKhachHang");
+                }
+            }
+        }
+        return tenKhachHang;
+    }
+ // Tạo hóa đơn và chi tiết hóa đơn
     public boolean taoHoaDon(HoaDon hd, List<ChiTietHoaDonCaPhe> dsCT) throws SQLException {
         Connection con = DatabaseConnection.getInstance().getConnection();
         try {
             con.setAutoCommit(false);
 
             // Insert hóa đơn
-            String sqlHD = "INSERT INTO HoaDon (...) VALUES (...)";
-            // thực hiện insert, lấy ra mã hóa đơn vừa tạo
+            String sqlHD = "INSERT INTO HoaDon (NgayTao, TongTien, TienKhachTra, TienThua, MaNV, MaKH) VALUES (?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement psHD = con.prepareStatement(sqlHD, Statement.RETURN_GENERATED_KEYS)) {
+                psHD.setTimestamp(1, Timestamp.valueOf(hd.getNgayLap()));
+                psHD.setDouble(2, hd.getTongTien());
+                psHD.setDouble(3, hd.getTienKhachTra());
+                psHD.setDouble(4, hd.getTienThua());
+                psHD.setInt(5, hd.getMaNhanVien());
+                psHD.setInt(6, hd.getMaKhachHang());
+                psHD.executeUpdate();
 
-            // Insert chi tiết hóa đơn
-            for (ChiTietHoaDonCaPhe ct : dsCT) {
-                // gán mã hóa đơn
-                ct.setMaHoaDon(hd.getMaHoaDon());
-                // thực hiện insert chi tiết
+                // Lấy mã hóa đơn vừa tạo
+                ResultSet rs = psHD.getGeneratedKeys();
+                if (rs.next()) {
+                    int maHoaDon = rs.getInt(1);
+                    hd.setMaHoaDon(maHoaDon);
+
+                    // Insert chi tiết hóa đơn
+                    String sqlCT = "INSERT INTO ChiTietHoaDonCaPhe (MaHoaDon, MaSanPham, TenSanPham, SoLuong, DonGia, ThanhTien) VALUES (?, ?, ?, ?, ?, ?)";
+                    try (PreparedStatement psCT = con.prepareStatement(sqlCT)) {
+                        for (ChiTietHoaDonCaPhe ct : dsCT) {
+                            psCT.setInt(1, maHoaDon);
+                            psCT.setInt(2, ct.getMaSanPham());
+                            psCT.setString(3, ct.getTenSanPham());   // Chèn tên sản phẩm
+                            psCT.setInt(4, ct.getSoLuong());
+                            psCT.setDouble(5, ct.getDonGia());
+                            psCT.setDouble(6, ct.getThanhTien());  // Tính toán và chèn thành tiền (SoLuong * DonGia)
+                            psCT.addBatch();
+                        }
+                        psCT.executeBatch();
+                    }
+                }
             }
 
             con.commit();
