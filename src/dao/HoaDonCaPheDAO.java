@@ -1,4 +1,3 @@
-//Nguyễn Tuấn Phát
 package dao;
 
 import entities.HoaDon;
@@ -15,7 +14,7 @@ public class HoaDonCaPheDAO {
         this.conn = conn;
     }
 
-    // Thêm hóa đơn mới
+    // Thêm hóa đơn mới - để SQL Server tự tăng MaHD
     public int insertHoaDon(HoaDon hd) {
         String sql = "INSERT INTO HoaDon (MaDH, NgayTao, TongTien, TienKhachTra, TienThua, MaNV) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -100,7 +99,4 @@ public class HoaDonCaPheDAO {
             return false;
         }
     }
-}
-
-
 }
