@@ -34,13 +34,13 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         // Khởi tạo các panel cho từng màn hình
         manHinhTrangChu = new ManHinhTrangChu();
         quanLySanPham = new QuanLySanPham();
-////        quanLyHoaDon = new QuanLyDonHang();
-//        baoCaoDoanhThu = new BaoCaoDoanhThu();
+        quanLyHoaDon = new frmQuanLyHoaDon();
+        //baoCaoDoanhThu = new BaoCaoDoanhThu();
 
         // Thêm các panel vào panelNoiDung
         panelNoiDung.add(manHinhTrangChu, "TrangChu");
         panelNoiDung.add(quanLySanPham, "SanPham");
-////        panelNoiDung.add(quanLyHoaDon, "HoaDon");
+        panelNoiDung.add(quanLyHoaDon, "HoaDon");
 //        panelNoiDung.add(baoCaoDoanhThu, "DoanhThu");
 
         // Tạo panel menu ở bên trái
@@ -112,6 +112,8 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
 
     // Hiển thị màn hình quản lý hóa đơn
     private void hienThiQuanLyHoaDon() {
+    	quanLyHoaDon = new frmQuanLyHoaDon();
+    	panelNoiDung.add(quanLyHoaDon, "HoaDon");
         cardLayout.show(panelNoiDung, "HoaDon");
     }
 
