@@ -21,9 +21,9 @@ public class frmQuanLyHoaDon extends JPanel {
     public frmQuanLyHoaDon() {
         setLayout(new BorderLayout());
 
-        // Tạo model cho bảng
+        // Tạo model cho bảng, thêm cột MaSP
         tableModel = new DefaultTableModel();
-        tableModel.setColumnIdentifiers(new String[]{"Mã HĐ", "Ngày Lập", "Khách Hàng", "Tổng Tiền"});
+        tableModel.setColumnIdentifiers(new String[]{"Mã HĐ", "Ngày Lập", "Khách Hàng", "Tổng Tiền", "Mã SP"}); // Thêm "Mã SP"
 
         // Tạo bảng và gắn vào ScrollPane
         table = new JTable(tableModel);
@@ -46,22 +46,25 @@ public class frmQuanLyHoaDon extends JPanel {
      */
     public List<Object[]> getAllHoaDon() {
         List<Object[]> list = new ArrayList<>();
+
+        // Sửa lại SQL: bỏ JOIN DonHang, thay bằng JOIN trực tiếp với KhachHang qua MaKH
         String sql = """
-            SELECT hd.MaHD, hd.NgayTao, (kh.Ho + ' ' + kh.Ten) AS HoTen, hd.TongTien
+            SELECT hd.MaHD, hd.NgayTao, (kh.Ho + ' ' + kh.Ten) AS HoTen, hd.TongTien, cthd.MaSP
             FROM HoaDon hd
-            JOIN DonHang dh ON hd.MaDH = dh.MaDH
-            JOIN KhachHang kh ON dh.MaKH = kh.MaKH
+            JOIN KhachHang kh ON hd.MaKH = kh.MaKH
+            JOIN ChiTietHoaDon cthd ON hd.MaHD = cthd.MaHD
             ORDER BY hd.NgayTao DESC
         """;
 
         try (Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                Object[] row = new Object[]{
+                Object[] row = new Object[] {
                     rs.getInt("MaHD"),
                     rs.getTimestamp("NgayTao").toLocalDateTime(),
-                    rs.getString("HoTen"), // sử dụng alias đã đặt trong SQL
-                    rs.getDouble("TongTien")
+                    rs.getString("HoTen"),
+                    rs.getDouble("TongTien"),
+                    rs.getString("MaSP")
                 };
                 list.add(row);
             }
@@ -70,7 +73,6 @@ public class frmQuanLyHoaDon extends JPanel {
         }
         return list;
     }
-
 
     /**
      * Tải lại dữ liệu hóa đơn lên bảng
