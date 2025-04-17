@@ -1,16 +1,16 @@
-//Nguyễn Tuấn Phát
 package entities;
 
 import java.time.LocalDateTime;
 
 public class HoaDon {
     private int maHD;
-    private int maDH;
+    private int maDH; //bo
     private LocalDateTime ngayTao;
     private double tongTien;
-    private double tienKhachTra;
+    private double tienKhachTra;	
     private double tienThua;
-    private int maNV;
+    private int maNV; //bo
+    private int maKH;
 
     public HoaDon(int maHD, int maDH, LocalDateTime ngayTao, double tongTien, double tienKhachTra, double tienThua, int maNV) {
         this.maHD = maHD;
