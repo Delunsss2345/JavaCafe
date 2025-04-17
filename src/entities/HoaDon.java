@@ -2,77 +2,48 @@
 package entities;
 
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAccessor;
 
 public class HoaDon {
-    private String maHoaDon;
-    private LocalDateTime ngayLap;
-    private String maNhanVien;
-    private String tenNhanVien;
-    private String maKhachHang;
-    private String tenKhachHang;
+    private int maHD;
+    private int maDH;
+    private LocalDateTime ngayTao;
     private double tongTien;
-    public HoaDon() {
-    }
+    private double tienKhachTra;
+    private double tienThua;
+    private int maNV;
 
-    public HoaDon(String maHoaDon, LocalDateTime ngayLap, String maNhanVien, String tenNhanVien,
-                       String maKhachHang, String tenKhachHang, double tongTien) {
-        this.maHoaDon = maHoaDon;
-        this.ngayLap = ngayLap;
-        this.maNhanVien = maNhanVien;
-        this.tenNhanVien = tenNhanVien;
-        this.maKhachHang = maKhachHang;
-        this.tenKhachHang = tenKhachHang;
+    public HoaDon(int maHD, int maDH, LocalDateTime ngayTao, double tongTien, double tienKhachTra, double tienThua, int maNV) {
+        this.maHD = maHD;
+        this.maDH = maDH;
+        this.ngayTao = ngayTao;
         this.tongTien = tongTien;
+        this.tienKhachTra = tienKhachTra;
+        this.tienThua = tienThua;
+        this.maNV = maNV;
     }
 
-    // Getters & Setters
-    public String getMaHoaDon() {
-        return maHoaDon;
+    public int getMaHD() {
+        return maHD;
     }
 
-    public void setMaHoaDon(String maHoaDon) {
-        this.maHoaDon = maHoaDon;
+    public void setMaHD(int maHD) {
+        this.maHD = maHD;
     }
 
-    public LocalDateTime getNgayLap() {
-        return ngayLap;
+    public int getMaDH() {
+        return maDH;
     }
 
-    public void setNgayLap(LocalDateTime ngayLap) {
-        this.ngayLap = ngayLap;
+    public void setMaDH(int maDH) {
+        this.maDH = maDH;
     }
 
-    public String getMaNhanVien() {
-        return maNhanVien;
+    public LocalDateTime getNgayTao() {
+        return ngayTao;
     }
 
-    public void setMaNhanVien(String maNhanVien) {
-        this.maNhanVien = maNhanVien;
-    }
-
-    public String getTenNhanVien() {
-        return tenNhanVien;
-    }
-
-    public void setTenNhanVien(String tenNhanVien) {
-        this.tenNhanVien = tenNhanVien;
-    }
-
-    public String getMaKhachHang() {
-        return maKhachHang;
-    }
-
-    public void setMaKhachHang(String maKhachHang) {
-        this.maKhachHang = maKhachHang;
-    }
-
-    public String getTenKhachHang() {
-        return tenKhachHang;
-    }
-
-    public void setTenKhachHang(String tenKhachHang) {
-        this.tenKhachHang = tenKhachHang;
+    public void setNgayTao(LocalDateTime ngayTao) {
+        this.ngayTao = ngayTao;
     }
 
     public double getTongTien() {
@@ -83,16 +54,34 @@ public class HoaDon {
         this.tongTien = tongTien;
     }
 
-    @Override
-    public String toString() {
-        return "HoaDonCaPhe{" +
-                "maHoaDon='" + maHoaDon + '\'' +
-                ", ngayLap=" + ngayLap +
-                ", maNhanVien='" + maNhanVien + '\'' +
-                ", tenNhanVien='" + tenNhanVien + '\'' +
-                ", maKhachHang='" + maKhachHang + '\'' +
-                ", tenKhachHang='" + tenKhachHang + '\'' +
-                ", tongTien=" + tongTien +
-                '}';
+    public double getTienKhachTra() {
+        return tienKhachTra;
     }
+
+    public void setTienKhachTra(double tienKhachTra) {
+        this.tienKhachTra = tienKhachTra;
+    }
+
+    public double getTienThua() {
+        return tienThua;
+    }
+
+    public void setTienThua(double tienThua) {
+        this.tienThua = tienThua;
+    }
+
+    public int getMaNV() {
+        return maNV;
+    }
+
+    public void setMaNV(int maNV) {
+        this.maNV = maNV;
+    }
+
+	@Override
+	public String toString() {
+		return "HoaDon [maHD=" + maHD + ", maDH=" + maDH + ", ngayTao=" + ngayTao + ", tongTien=" + tongTien
+				+ ", tienKhachTra=" + tienKhachTra + ", tienThua=" + tienThua + ", maNV=" + maNV + "]";
+	}
+    
 }
