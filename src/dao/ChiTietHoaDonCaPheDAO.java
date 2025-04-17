@@ -16,7 +16,7 @@ public class ChiTietHoaDonCaPheDAO {
 
     // Thêm một chi tiết hóa đơn
     public boolean insertChiTiet(ChiTietHoaDonCaPhe ct) {
-        String sql = "INSERT INTO ChiTietHoaDon (maHoaDon, maSanPham, tenSanPham, soLuong, donGia, thanhTien) " +
+        String sql = "INSERT INTO ChiTietHoaDon (MaHD, MaSP, TenSanPham, SoLuong, DonGia, ThanhTien) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, ct.getMaHoaDon());
