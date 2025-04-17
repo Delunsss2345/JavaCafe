@@ -119,7 +119,7 @@ public class frmLapHoaDon extends JFrame {
         LocalDateTime gioVao = LocalDateTime.now();
         LocalDateTime gioRa = LocalDateTime.now();
 
-        frmChiTietHoaDon chiTietForm = new frmChiTietHoaDon(maNV, tenNV, maKH, tenKH, tongTien, gioRa, gioRa, gioHang);
+        frmChiTietHoaDon chiTietForm = new frmChiTietHoaDon(maNV, tenNV, maKH, tenKH, tongTien, gioRa, gioRa, gioHang, getDefaultCloseOperation(), tongTien);
         chiTietForm.setVisible(true);
     }
 
