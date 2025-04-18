@@ -8,18 +8,20 @@ import java.util.List;
 import ConnectDB.DatabaseConnection;
 
 public class LoaiSanPhamDAO {
-    private Connection connection;
-
-    public LoaiSanPhamDAO() throws SQLException {
-        connection = DatabaseConnection.getInstance().getConnection();
+    public LoaiSanPhamDAO() {
+       
     }
 
-   
+    // Lấy danh sách tất cả Loại Sản Phẩm
     public List<LoaiSanPham> getAllLoaiSanPham() throws SQLException {
         List<LoaiSanPham> list = new ArrayList<>();
         String sql = "SELECT * FROM LoaiSanPham";
-        try (Statement stmt = connection.createStatement();
+
+       
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+             Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+
             while (rs.next()) {
                 LoaiSanPham loaiSanPham = new LoaiSanPham(
                         rs.getInt("MaLoai"),
@@ -33,10 +35,12 @@ public class LoaiSanPhamDAO {
         return list;
     }
 
-    
+   
     public boolean addLoaiSanPham(LoaiSanPham loaiSanPham) throws SQLException {
         String sql = "INSERT INTO LoaiSanPham (TenLoai, MoTa, Icon) VALUES (?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, loaiSanPham.getTenLoai());
             pstmt.setString(2, loaiSanPham.getMoTa());
             pstmt.setString(3, loaiSanPham.getIcon());
@@ -44,10 +48,13 @@ public class LoaiSanPhamDAO {
         }
     }
 
-  
+    // Cập nhật Loại Sản Phẩm
     public boolean updateLoaiSanPham(LoaiSanPham loaiSanPham) throws SQLException {
         String sql = "UPDATE LoaiSanPham SET TenLoai = ?, MoTa = ?, Icon = ? WHERE MaLoai = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        
+       
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, loaiSanPham.getTenLoai());
             pstmt.setString(2, loaiSanPham.getMoTa());
             pstmt.setString(3, loaiSanPham.getIcon());
@@ -56,18 +63,22 @@ public class LoaiSanPhamDAO {
         }
     }
 
-  
+    // Xóa Loại Sản Phẩm
     public boolean deleteLoaiSanPham(int maLoai) throws SQLException {
         String sql = "DELETE FROM LoaiSanPham WHERE MaLoai = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+          
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, maLoai);
             return pstmt.executeUpdate() > 0;
         }
     }
 
+    // Lấy Loại Sản Phẩm theo ID
     public LoaiSanPham getLoaiSanPhamById(int maLoai) throws SQLException {
         String sql = "SELECT * FROM LoaiSanPham WHERE MaLoai = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, maLoai);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {

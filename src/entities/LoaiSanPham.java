@@ -1,11 +1,16 @@
 package entities;
-//Người làm Phạm Thanh Huy
+
 public class LoaiSanPham {
     private int maLoai;
     private String tenLoai;
     private String moTa;
     private String icon;
 
+    // Constructor mặc định
+    public LoaiSanPham() {
+    }
+
+    // Constructor với đầy đủ tham số
     public LoaiSanPham(int maLoai, String tenLoai, String moTa, String icon) {
         this.maLoai = maLoai;
         this.tenLoai = tenLoai;
@@ -13,6 +18,7 @@ public class LoaiSanPham {
         this.icon = icon;
     }
 
+    // Getter và Setter
     public int getMaLoai() {
         return maLoai;
     }
@@ -42,5 +48,17 @@ public class LoaiSanPham {
     }
 
     public void setIcon(String icon) {
+        this.icon = icon; // Đã thêm dòng này để gán giá trị
+    }
+
+    // Phương thức toString() để tiện cho debug và hiển thị
+    @Override
+    public String toString() {
+        return "LoaiSanPham{" +
+                "maLoai=" + maLoai +
+                ", tenLoai='" + tenLoai + '\'' +
+                ", moTa='" + moTa + '\'' +
+                ", icon='" + icon + '\'' +
+                '}';
     }
 }

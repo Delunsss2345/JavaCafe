@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="src/lib/sqljdbc4.jar"/>
 	<classpathentry kind="lib" path="src/lib/javase-3.5.2.jar"/>
 	<classpathentry kind="lib" path="src/lib/core-3.5.2.jar"/>
+	<classpathentry kind="lib" path="src/lib/mssql-jdbc-12.10.0.jre11.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

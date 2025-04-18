@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 public class SanPham {
     private int maSanPham;
     private String tenSanPham;
-    private int maLoai;
+    private LoaiSanPham loaiSanPham ; 
     private BigDecimal gia; 
     private String moTa;
     private String trangThai;
@@ -16,22 +16,22 @@ public class SanPham {
 
     public SanPham() {
     }
-    public SanPham(int maSanPham, String tenSanPham, int maLoai, BigDecimal gia, String moTa, String trangThai, String hinhAnh, LocalDateTime ngayCapNhat) {
+    public SanPham(int maSanPham, String tenSanPham, LoaiSanPham loaiSanPham, BigDecimal gia, String moTa, String trangThai, String hinhAnh, LocalDateTime ngayCapNhat) {
         this.maSanPham = maSanPham;
         this.tenSanPham = tenSanPham;
-        this.maLoai = maLoai;
+       	this.loaiSanPham = loaiSanPham ;
         this.gia = gia;
         this.moTa = moTa;
         this.trangThai = trangThai;
         this.hinhAnh = hinhAnh;
         this.ngayCapNhat = ngayCapNhat;
     }
-    public SanPham(int maSanPham, String tenSanPham, int maLoai,
+    public SanPham(int maSanPham, String tenSanPham, LoaiSanPham loaiSanPham,
                   BigDecimal gia, String moTa, String trangThai,
                   String hinhAnh, LocalDateTime ngayTao, LocalDateTime ngayCapNhat) {
         this.maSanPham = maSanPham;
         this.tenSanPham = tenSanPham;
-        this.maLoai = maLoai;
+        this.loaiSanPham = loaiSanPham;
         this.gia = gia;
         this.moTa = moTa;
         this.trangThai = trangThai;
@@ -45,7 +45,13 @@ public class SanPham {
         return maSanPham;
     }
 
-    public void setMaSanPham(int maSanPham) {
+    public LoaiSanPham getLoaiSanPham() {
+		return loaiSanPham;
+	}
+	public void setLoaiSanPham(LoaiSanPham loaiSanPham) {
+		this.loaiSanPham = loaiSanPham;
+	}
+	public void setMaSanPham(int maSanPham) {
         this.maSanPham = maSanPham;
     }
 
@@ -57,13 +63,6 @@ public class SanPham {
         this.tenSanPham = tenSanPham;
     }
 
-    public int getMaLoai() {
-        return maLoai;
-    }
-
-    public void setMaLoai(int maLoai) {
-        this.maLoai = maLoai;
-    }
 
     public BigDecimal getGia() {
         return gia;

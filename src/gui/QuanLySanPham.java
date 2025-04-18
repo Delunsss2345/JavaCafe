@@ -27,6 +27,7 @@ public class QuanLySanPham extends JPanel {
     private JPanel panelButton;  
     private JButton btnThem, btnSua, btnXoa;
     private int currentMaLoai; // Track the current category ID
+    
 
     public QuanLySanPham() {
         setLayout(new BorderLayout());
@@ -155,7 +156,7 @@ public class QuanLySanPham extends JPanel {
     }
 
     private void loadSanPhamTheoLoai(int maLoai) {
-        List<SanPham> sanPhamList = sanPhamDAO.getSanPhamByLoai(maLoai);
+        List<SanPham> sanPhamList = sanPhamDAO.getSanPhamByLoai(maLoai) ;
         modelSanPham.setRowCount(0);  
 
         for (SanPham sanPham : sanPhamList) {
@@ -180,67 +181,191 @@ public class QuanLySanPham extends JPanel {
 
     private void openAddProductDialog() {
         JDialog addProductDialog = new JDialog((Frame) null, "Thêm Sản Phẩm", true);
-        addProductDialog.setLayout(new GridLayout(7, 2));  
-
-        JTextField txtTenSanPham = new JTextField();
-        JTextField txtGia = new JTextField();
+        addProductDialog.setLayout(new BorderLayout());
+        
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        // Tạo các components
+        JTextField txtTenSanPham = new JTextField(20);
+        JTextField txtGia = new JTextField(20);
         JComboBox<String> cboTrangThai = new JComboBox<>(new String[]{"Đang Bán", "Hết Hàng"});
-        JTextField txtMoTa = new JTextField();
-        JTextField txtMaLoai = new JTextField(String.valueOf(currentMaLoai)); // Pre-fill with current category
-
+        JTextArea txtMoTa = new JTextArea(3, 20);
+        txtMoTa.setLineWrap(true);
+        JScrollPane scrollMoTa = new JScrollPane(txtMoTa);
+        
+        // Hiển thị loại sản phẩm đã chọn
+        LoaiSanPham loaiDaChon = null;
+        try {
+            loaiDaChon = loaiSanPhamDAO.getLoaiSanPhamById(currentMaLoai);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        JTextField txtMaLoai = new JTextField(String.valueOf(currentMaLoai));
+        txtMaLoai.setEditable(false);
+        
+        JTextField txtTenLoai = new JTextField(loaiDaChon != null ? loaiDaChon.getTenLoai() : "");
+        txtTenLoai.setEditable(false);
+        
         JLabel lblHinhAnh = new JLabel("Chưa chọn ảnh");
+        lblHinhAnh.setPreferredSize(new Dimension(200, 30));
         JButton btnChonAnh = new JButton("Chọn ảnh");
-
-        final String[] hinhAnhPath = {""};  
-
+        
+        final String[] hinhAnhPath = {""};
+        final JLabel lblPreviewImage = new JLabel();
+        lblPreviewImage.setPreferredSize(new Dimension(150, 150));
+        lblPreviewImage.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        lblPreviewImage.setHorizontalAlignment(SwingConstants.CENTER);
+        
         btnChonAnh.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "Hình ảnh", "jpg", "jpeg", "png", "gif"));
             int result = fileChooser.showOpenDialog(addProductDialog);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
-                hinhAnhPath[0] = selectedFile.getAbsolutePath(); // Store full path
+                hinhAnhPath[0] = selectedFile.getAbsolutePath();
                 lblHinhAnh.setText(selectedFile.getName());
+                
+                // Hiển thị preview hình ảnh
+                try {
+                    ImageIcon imageIcon = new ImageIcon(hinhAnhPath[0]);
+                    Image image = imageIcon.getImage().getScaledInstance(
+                            150, 150, Image.SCALE_SMOOTH);
+                    lblPreviewImage.setIcon(new ImageIcon(image));
+                } catch (Exception ex) {
+                    lblPreviewImage.setIcon(null);
+                    lblPreviewImage.setText("Không thể tải hình ảnh");
+                }
             }
         });
-
+        
+        // Thêm các components vào form
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        formPanel.add(new JLabel("Tên sản phẩm:"), gbc);
+        
+        gbc.gridx = 1;
+        formPanel.add(txtTenSanPham, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        formPanel.add(new JLabel("Giá:"), gbc);
+        
+        gbc.gridx = 1;
+        formPanel.add(txtGia, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        formPanel.add(new JLabel("Trạng thái:"), gbc);
+        
+        gbc.gridx = 1;
+        formPanel.add(cboTrangThai, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        formPanel.add(new JLabel("Mô tả sản phẩm:"), gbc);
+        
+        gbc.gridx = 1;
+        formPanel.add(scrollMoTa, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        formPanel.add(new JLabel("Mã loại sản phẩm:"), gbc);
+        
+        gbc.gridx = 1;
+        formPanel.add(txtMaLoai, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        formPanel.add(new JLabel("Tên loại:"), gbc);
+        
+        gbc.gridx = 1;
+        formPanel.add(txtTenLoai, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        formPanel.add(btnChonAnh, gbc);
+        
+        gbc.gridx = 1;
+        formPanel.add(lblHinhAnh, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.gridwidth = 2;
+        formPanel.add(lblPreviewImage, gbc);
+        
+        // Panel chứa các nút
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnSave = new JButton("Lưu");
+        JButton btnCancel = new JButton("Hủy");
+        
+        btnCancel.addActionListener(e -> addProductDialog.dispose());
+        
         btnSave.addActionListener(e -> {
             try {
                 String tenSanPham = txtTenSanPham.getText();
-                BigDecimal gia = new BigDecimal(txtGia.getText());
+                if (tenSanPham.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(addProductDialog, "Tên sản phẩm không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                BigDecimal gia;
+                try {
+                    gia = new BigDecimal(txtGia.getText().replace(",", ""));
+                    if (gia.compareTo(BigDecimal.ZERO) < 0) {
+                        JOptionPane.showMessageDialog(addProductDialog, "Giá không được âm", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(addProductDialog, "Giá không hợp lệ", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
                 String trangThai = (String) cboTrangThai.getSelectedItem();
                 String moTa = txtMoTa.getText();
                 int maLoai = Integer.parseInt(txtMaLoai.getText());
                 String hinhAnh = hinhAnhPath[0];
-
+                
+                if (hinhAnh.isEmpty()) {
+                    JOptionPane.showMessageDialog(addProductDialog, "Vui lòng chọn hình ảnh cho sản phẩm", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                // Lấy đầy đủ thông tin loại sản phẩm
+                loaiSanPhamDAO = new LoaiSanPhamDAO() ; 
+                LoaiSanPham loaiSanPham = loaiSanPhamDAO.getLoaiSanPhamById(maLoai);
+                if (loaiSanPham == null) {
+                    JOptionPane.showMessageDialog(addProductDialog, "Mã loại sản phẩm không tồn tại", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
                 LocalDateTime now = LocalDateTime.now();
-
-                SanPham sp = new SanPham(0, tenSanPham, maLoai, gia, moTa, trangThai, hinhAnh, now, now);
+                SanPham sp = new SanPham(0, tenSanPham, loaiSanPham, gia, moTa, trangThai, hinhAnh, now, now);
                 sanPhamDAO.addSanPham(sp);
 
                 loadSanPhamTheoLoai(maLoai);
+                JOptionPane.showMessageDialog(addProductDialog, "Thêm sản phẩm thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 addProductDialog.dispose();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(addProductDialog, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         });
-
-      
-        addProductDialog.add(new JLabel("Tên sản phẩm:"));
-        addProductDialog.add(txtTenSanPham);
-        addProductDialog.add(new JLabel("Giá:"));
-        addProductDialog.add(txtGia);
-        addProductDialog.add(new JLabel("Trạng thái:"));
-        addProductDialog.add(cboTrangThai);
-        addProductDialog.add(new JLabel("Mô tả sản phẩm:"));
-        addProductDialog.add(txtMoTa);
-        addProductDialog.add(new JLabel("Mã loại sản phẩm:"));
-        addProductDialog.add(txtMaLoai);
-        addProductDialog.add(btnChonAnh);
-        addProductDialog.add(lblHinhAnh);
-        addProductDialog.add(btnSave);
-
-        addProductDialog.setSize(450, 350);
+        
+        buttonPanel.add(btnSave);
+        buttonPanel.add(btnCancel);
+        
+        addProductDialog.add(formPanel, BorderLayout.CENTER);
+        addProductDialog.add(buttonPanel, BorderLayout.SOUTH);
+        
+        addProductDialog.pack();
+        addProductDialog.setSize(450, 550);
         addProductDialog.setLocationRelativeTo(null);
         addProductDialog.setVisible(true);
     }
@@ -255,8 +380,7 @@ public class QuanLySanPham extends JPanel {
         int maSanPham = (int) modelSanPham.getValueAt(selectedRow, 0);
         
         try {
-            // Get the full product information from the database
-            SanPham sanPham = sanPhamDAO.getSanPhamTheoMa(maSanPham);
+            SanPham sanPham = sanPhamDAO.getSanPhamById(maSanPham);
             
             if (sanPham == null) {
                 JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin sản phẩm.", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -264,78 +388,235 @@ public class QuanLySanPham extends JPanel {
             }
             
             JDialog editProductDialog = new JDialog((Frame) null, "Sửa Sản Phẩm", true);
-            editProductDialog.setLayout(new GridLayout(7, 2));
-    
-            JTextField txtTenSanPham = new JTextField(sanPham.getTenSanPham());
-            JTextField txtGia = new JTextField(sanPham.getGia().toString());
-            JComboBox<String> cboTrangThai = new JComboBox<>(new String[]{"Đang bán", "Hết bán"});
+            editProductDialog.setLayout(new BorderLayout());
+            
+            JPanel formPanel = new JPanel();
+            formPanel.setLayout(new GridBagLayout());
+            formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(5, 5, 5, 5);
+            
+            JTextField txtTenSanPham = new JTextField(sanPham.getTenSanPham(), 20);
+            JTextField txtGia = new JTextField(sanPham.getGia().toString(), 20);
+            JComboBox<String> cboTrangThai = new JComboBox<>(new String[]{"Đang Bán", "Hết Hàng"});
             cboTrangThai.setSelectedItem(sanPham.getTrangThai());
-            JTextField txtMoTa = new JTextField(sanPham.getMoTa());
-            JTextField txtMaLoai = new JTextField(String.valueOf(sanPham.getMaLoai()));
+            
+            JTextArea txtMoTa = new JTextArea(sanPham.getMoTa(), 3, 20);
+            txtMoTa.setLineWrap(true);
+            JScrollPane scrollMoTa = new JScrollPane(txtMoTa);
+            
+            JTextField txtMaLoai = new JTextField(String.valueOf(sanPham.getLoaiSanPham().getMaLoai()));
+            JTextField txtTenLoai = new JTextField(sanPham.getLoaiSanPham().getTenLoai());
+            txtTenLoai.setEditable(false);
             
             JLabel lblHinhAnh = new JLabel(sanPham.getHinhAnh() != null ? 
                                        new File(sanPham.getHinhAnh()).getName() : "Không có hình ảnh");
+            lblHinhAnh.setPreferredSize(new Dimension(200, 30));
+            
             JButton btnChonAnh = new JButton("Thay đổi hình ảnh");
             
             final String[] hinhAnhPath = {sanPham.getHinhAnh()};
             
+            final JLabel lblPreviewImage = new JLabel();
+            lblPreviewImage.setPreferredSize(new Dimension(150, 150));
+            lblPreviewImage.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            lblPreviewImage.setHorizontalAlignment(SwingConstants.CENTER);
+            
+            // Hiển thị hình ảnh hiện tại
+            if (sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isEmpty()) {
+                try {
+                    ImageIcon imageIcon = new ImageIcon(sanPham.getHinhAnh());
+                    Image image = imageIcon.getImage().getScaledInstance(
+                            150, 150, Image.SCALE_SMOOTH);
+                    lblPreviewImage.setIcon(new ImageIcon(image));
+                } catch (Exception ex) {
+                    lblPreviewImage.setIcon(null);
+                    lblPreviewImage.setText("Không thể tải hình ảnh");
+                }
+            }
+            
             btnChonAnh.addActionListener(e -> {
                 JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                        "Hình ảnh", "jpg", "jpeg", "png", "gif"));
                 int result = fileChooser.showOpenDialog(editProductDialog);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();
                     hinhAnhPath[0] = selectedFile.getAbsolutePath();
                     lblHinhAnh.setText(selectedFile.getName());
+                    
+                    // Hiển thị preview hình ảnh
+                    try {
+                        ImageIcon imageIcon = new ImageIcon(hinhAnhPath[0]);
+                        Image image = imageIcon.getImage().getScaledInstance(
+                                150, 150, Image.SCALE_SMOOTH);
+                        lblPreviewImage.setIcon(new ImageIcon(image));
+                    } catch (Exception ex) {
+                        lblPreviewImage.setIcon(null);
+                        lblPreviewImage.setText("Không thể tải hình ảnh");
+                    }
                 }
             });
-    
+            
+            // Thêm các components vào form
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            formPanel.add(new JLabel("Tên sản phẩm:"), gbc);
+            
+            gbc.gridx = 1;
+            formPanel.add(txtTenSanPham, gbc);
+            
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            formPanel.add(new JLabel("Giá:"), gbc);
+            
+            gbc.gridx = 1;
+            formPanel.add(txtGia, gbc);
+            
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            formPanel.add(new JLabel("Trạng thái:"), gbc);
+            
+            gbc.gridx = 1;
+            formPanel.add(cboTrangThai, gbc);
+            
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            formPanel.add(new JLabel("Mô tả sản phẩm:"), gbc);
+            
+            gbc.gridx = 1;
+            formPanel.add(scrollMoTa, gbc);
+            
+            gbc.gridx = 0;
+            gbc.gridy = 4;
+            formPanel.add(new JLabel("Mã loại sản phẩm:"), gbc);
+            
+            gbc.gridx = 1;
+            JPanel loaiPanel = new JPanel(new BorderLayout());
+            loaiPanel.add(txtMaLoai, BorderLayout.CENTER);
+            JButton btnTimLoai = new JButton("Tìm");
+            loaiPanel.add(btnTimLoai, BorderLayout.EAST);
+            formPanel.add(loaiPanel, gbc);
+            
+            btnTimLoai.addActionListener(e -> {
+                try {
+                    int maLoai = Integer.parseInt(txtMaLoai.getText().trim());
+                    loaiSanPhamDAO = new LoaiSanPhamDAO() ; 
+                    LoaiSanPham loaiSP = loaiSanPhamDAO.getLoaiSanPhamById(maLoai);
+                    if (loaiSP != null) {
+                        txtTenLoai.setText(loaiSP.getTenLoai());
+                    } else {
+                        txtTenLoai.setText("Không tìm thấy");
+                        JOptionPane.showMessageDialog(editProductDialog, "Không tìm thấy loại sản phẩm với mã " + maLoai, 
+                                "Thông báo", JOptionPane.WARNING_MESSAGE);
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(editProductDialog, "Mã loại không hợp lệ", 
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(editProductDialog, "Lỗi: " + ex.getMessage(), 
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            
+            gbc.gridx = 0;
+            gbc.gridy = 5;
+            formPanel.add(new JLabel("Tên loại:"), gbc);
+            
+            gbc.gridx = 1;
+            formPanel.add(txtTenLoai, gbc);
+            
+            gbc.gridx = 0;
+            gbc.gridy = 6;
+            formPanel.add(btnChonAnh, gbc);
+            
+            gbc.gridx = 1;
+            formPanel.add(lblHinhAnh, gbc);
+            
+            gbc.gridx = 0;
+            gbc.gridy = 7;
+            gbc.gridwidth = 2;
+            formPanel.add(lblPreviewImage, gbc);
+            
+            // Panel chứa các nút
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             JButton btnSave = new JButton("Lưu");
+            JButton btnCancel = new JButton("Hủy");
+            
+            btnCancel.addActionListener(e -> editProductDialog.dispose());
+            
             btnSave.addActionListener(e -> {
                 try {
                     String tenMoi = txtTenSanPham.getText().trim();
-                    BigDecimal giaMoi = new BigDecimal(txtGia.getText().trim());
+                    if (tenMoi.isEmpty()) {
+                        JOptionPane.showMessageDialog(editProductDialog, "Tên sản phẩm không được để trống", 
+                                "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    
+                    BigDecimal giaMoi;
+                    try {
+                        giaMoi = new BigDecimal(txtGia.getText().trim().replace(",", ""));
+                        if (giaMoi.compareTo(BigDecimal.ZERO) < 0) {
+                            JOptionPane.showMessageDialog(editProductDialog, "Giá không được âm", 
+                                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(editProductDialog, "Giá không hợp lệ", 
+                                "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    
                     String trangThaiMoi = (String) cboTrangThai.getSelectedItem();
                     String moTaMoi = txtMoTa.getText().trim();
                     int maLoaiMoi = Integer.parseInt(txtMaLoai.getText().trim());
+                    
+                    // Lấy đầy đủ thông tin loại sản phẩm
+                    LoaiSanPham loaiSp = loaiSanPhamDAO.getLoaiSanPhamById(maLoaiMoi);
+                    if (loaiSp == null) {
+                        JOptionPane.showMessageDialog(editProductDialog, "Mã loại sản phẩm không tồn tại", 
+                                "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    
                     LocalDateTime ngayCapNhat = LocalDateTime.now();
-    
+                    
                     SanPham sp = new SanPham(
-                        maSanPham, tenMoi, maLoaiMoi, giaMoi, moTaMoi, 
+                        maSanPham, tenMoi, loaiSp, giaMoi, moTaMoi, 
                         trangThaiMoi, hinhAnhPath[0], 
                         sanPham.getNgayTao(), ngayCapNhat
                     );
-    
+
                     sanPhamDAO.updateSanPham(sp);
-                    loadSanPhamTheoLoai(maLoaiMoi);
+                    loadSanPhamTheoLoai(currentMaLoai);
+                    JOptionPane.showMessageDialog(editProductDialog, "Cập nhật sản phẩm thành công!", 
+                            "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                     editProductDialog.dispose();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(editProductDialog, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(editProductDialog, "Lỗi: " + ex.getMessage(), 
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
             });
-    
-            editProductDialog.add(new JLabel("Tên sản phẩm:"));
-            editProductDialog.add(txtTenSanPham);
-            editProductDialog.add(new JLabel("Giá:"));
-            editProductDialog.add(txtGia);
-            editProductDialog.add(new JLabel("Trạng thái:"));
-            editProductDialog.add(cboTrangThai);
-            editProductDialog.add(new JLabel("Mô tả sản phẩm:"));
-            editProductDialog.add(txtMoTa);
-            editProductDialog.add(new JLabel("Mã loại sản phẩm:"));
-            editProductDialog.add(txtMaLoai);
-            editProductDialog.add(btnChonAnh);
-            editProductDialog.add(lblHinhAnh);
-            editProductDialog.add(btnSave);
-    
-            editProductDialog.setSize(450, 350);
+            
+            buttonPanel.add(btnSave);
+            buttonPanel.add(btnCancel);
+            
+            editProductDialog.add(formPanel, BorderLayout.CENTER);
+            editProductDialog.add(buttonPanel, BorderLayout.SOUTH);
+            
+            editProductDialog.pack();
+            editProductDialog.setSize(450, 550);
             editProductDialog.setLocationRelativeTo(null);
             editProductDialog.setVisible(true);
             
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi lấy thông tin sản phẩm: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Lỗi lấy thông tin sản phẩm: " + ex.getMessage(), 
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 
     private void openDeleteProductDialog() {
         int selectedRow = tableSanPham.getSelectedRow();
@@ -351,7 +632,7 @@ public class QuanLySanPham extends JPanel {
             try {
                
                 int maLoai = currentMaLoai;
-                
+                sanPhamDAO = new SanPhamDAO() ; 
                 boolean success = sanPhamDAO.deleteSanPham(maSanPham);
                 
                 if (success) {
