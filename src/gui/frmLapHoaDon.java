@@ -92,7 +92,7 @@ public class frmLapHoaDon extends JFrame {
             for (ChiTietHoaDonCaPhe ct : gioHang) {
                 model.addRow(new Object[]{
                     stt++,
-                    ct.getTenSP(),
+                    ct.getTenSanPham(),
                     String.format("%,.0f VNĐ", ct.getDonGia()),
                     ct.getSoLuong(),
                     String.format("%,.0f VNĐ", ct.getThanhTien())
