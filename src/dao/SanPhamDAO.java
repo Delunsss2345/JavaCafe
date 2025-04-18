@@ -14,6 +14,7 @@ import entities.SanPham;
 
 public class SanPhamDAO {
     private static final Logger LOGGER = Logger.getLogger(SanPhamDAO.class.getName());
+
     
     // Lấy tất cả sản phẩm với thông tin loại sản phẩm (sử dụng JOIN)
     public List<SanPham> getAllSanPham() {
@@ -75,7 +76,7 @@ public class SanPhamDAO {
 
             // Validate trạng thái
             String trangThai = sanPham.getTrangThai();
-            if (!trangThai.equals("Đang Bán") && !trangThai.equals("Hết Hàng") && !trangThai.equals("Ngưng Bán")) {
+            if (!trangThai.equals("Đang bán") && !trangThai.equals("Hết hàng") && !trangThai.equals("Ngưng Bán")) {
                 throw new SQLException("Giá trị TrangThai không hợp lệ");
             }
             stmt.setString(5, trangThai);

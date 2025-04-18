@@ -29,7 +29,7 @@ public class ManHinhTrangChu extends JPanel {
         taiDanhSachSanPham();
     }
 
-    private void taiDanhSachSanPham()  {
+    public void taiDanhSachSanPham()  {
     	danhSachSanPham = sanPhamDAO.getAllSanPham();
         hienThiSanPham();
     }
@@ -52,7 +52,7 @@ public class ManHinhTrangChu extends JPanel {
         
         for (SanPham sanPham : danhSachSanPham) {
         	System.out.println("Xử lý sản phẩm: " + sanPham.getTenSanPham()); // Debug
-            if (!"Đang bán".equals(sanPham.getTrangThai())) {
+            if (!"Đang bán".equalsIgnoreCase(sanPham.getTrangThai())) {
                 continue; 
             }
 

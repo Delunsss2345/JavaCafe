@@ -648,6 +648,7 @@ public class QuanLySanPham extends JPanel {
         }
     }
 
+    
     private class ImageRenderer extends DefaultTableCellRenderer {
         @Override
         public void setValue(Object value) {

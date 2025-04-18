@@ -104,6 +104,7 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
     // Hiển thị màn hình trang chủ
     private void hienThiTrangChu() {
         cardLayout.show(panelNoiDung, "TrangChu");
+        manHinhTrangChu.taiDanhSachSanPham();
     }
 
     // Hiển thị màn hình quản lý sản phẩm
