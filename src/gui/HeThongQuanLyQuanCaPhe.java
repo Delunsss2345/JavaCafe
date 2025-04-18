@@ -34,14 +34,15 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         // Khởi tạo các panel cho từng màn hình
         manHinhTrangChu = new ManHinhTrangChu();
         quanLySanPham = new QuanLySanPham();
-        quanLyHoaDon = new frmQuanLyHoaDon();
+//        quanLyHoaDon = new frmQuanLyHoaDon();
     	
 //        baoCaoDoanhThu = new BaoCaoDoanhThu();
 
         // Thêm các panel vào panelNoiDung
-        panelNoiDung.add(quanLyHoaDon, "HoaDon");
+      
         panelNoiDung.add(manHinhTrangChu, "TrangChu");
         panelNoiDung.add(quanLySanPham, "SanPham");
+		/* panelNoiDung.add(quanLyHoaDon, "HoaDon"); */
 ////        panelNoiDung.add(baoCaoDoanhThu, "DoanhThu");
 
         // Tạo panel menu ở bên trái

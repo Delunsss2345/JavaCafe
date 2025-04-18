@@ -13,7 +13,7 @@ public class ChiTietHoaDonCaPheDAO {
 		this.conn = conn;
 	}
 
-<<<<<<< HEAD
+
     // Thêm một chi tiết hóa đơn
     public boolean insertChiTiet(ChiTietHoaDonCaPhe ct) {
         String sql = "INSERT INTO ChiTietHoaDon (maHoaDon, maSanPham, tenSanPham, soLuong, donGia, thanhTien) " +
@@ -56,7 +56,7 @@ public class ChiTietHoaDonCaPheDAO {
 //        }
 //        return ds;
 //    }
-=======
+
 	// Thêm một chi tiết hóa đơn
 	public boolean insertChiTiet(ChiTietHoaDonCaPhe ct) {
 		String sql = "INSERT INTO ChiTietHoaDon (MaHD, MaSP, TenSanPham, SoLuong, DonGia, ThanhTien) "
@@ -94,7 +94,7 @@ public class ChiTietHoaDonCaPheDAO {
 		}
 		return ds;
 	}
->>>>>>> 9f7c4dae8014534fdc391636cd6b0e6eb16f1e62
+
 
 	// Xóa tất cả chi tiết hóa đơn theo mã hóa đơn
 	public boolean deleteChiTietByMaHoaDon(String maHoaDon) {

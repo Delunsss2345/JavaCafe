@@ -3,6 +3,7 @@ package gui;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,11 +65,18 @@ public class ManHinhTrangChu extends JPanel {
           
             JLabel lblHinhAnh = new JLabel();
             if (sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isEmpty()) {
-                ImageIcon icon = new ImageIcon(sanPham.getHinhAnh());
-                Image img = icon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
-                lblHinhAnh.setIcon(new ImageIcon(img));
+            	File file = new File(sanPham.getHinhAnh());
+            	 if (file.exists()) {
+            	        ImageIcon icon = new ImageIcon(sanPham.getHinhAnh());
+            	        Image img = icon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+            	        lblHinhAnh.setIcon(new ImageIcon(img));
+            	    } else {
+            	        ImageIcon icon = new ImageIcon("src\\images\\image-notfound.png");
+            	        Image img = icon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+            	        lblHinhAnh.setIcon(new ImageIcon(img));
+            	    }
             } else {
-                ImageIcon icon = new ImageIcon("src/images/product_placeholder.png");
+                ImageIcon icon = new ImageIcon("src\\images\\image-notfound.png");
                 Image img = icon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
                 lblHinhAnh.setIcon(new ImageIcon(img));
             }
@@ -77,7 +85,7 @@ public class ManHinhTrangChu extends JPanel {
 
            
             JPanel panelThongTin = new JPanel(new BorderLayout());
-            panelThongTin.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+            panelThongTin.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
             
             JLabel lblTen = new JLabel(sanPham.getTenSanPham(), SwingConstants.CENTER);
             lblTen.setFont(new Font("Arial", Font.BOLD, 14));
@@ -88,7 +96,7 @@ public class ManHinhTrangChu extends JPanel {
             
             panelThongTin.add(lblTen, BorderLayout.NORTH);
             panelThongTin.add(lblGia, BorderLayout.SOUTH);
-
+            panelThongTin.setBackground(new Color(255, 255, 255));
            
             JButton btnThem = new JButton("Thêm vào giỏ");
             btnThem.setBackground(new Color(50, 150, 50));
@@ -97,8 +105,8 @@ public class ManHinhTrangChu extends JPanel {
             btnThem.addActionListener(e -> themVaoGioHang(sanPham));
 
             panelItem.add(lblHinhAnh, BorderLayout.CENTER);
-            panelItem.add(panelThongTin, BorderLayout.SOUTH);
-            panelItem.add(btnThem, BorderLayout.PAGE_END);
+            panelItem.add(panelThongTin, BorderLayout.NORTH);
+            panelItem.add(btnThem, BorderLayout.SOUTH);
 
             panelSanPham.add(panelItem);
         }
@@ -207,7 +215,6 @@ public class ManHinhTrangChu extends JPanel {
             tongTien += thanhTien;
 
             ChiTietHoaDonCaPhe ct = new ChiTietHoaDonCaPhe();
-            ct.setTenSanPham(tenSP);
             ct.setDonGia(donGia);
             ct.setSoLuong(soLuong);
             ct.setThanhTien(thanhTien);

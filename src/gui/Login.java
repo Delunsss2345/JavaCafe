@@ -1,7 +1,11 @@
 package gui;
-
+//Người làm Phạm Thanh Huy
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import dao.TaiKhoanDAO;
+import entities.TaiKhoan;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +15,7 @@ import java.awt.geom.RoundRectangle2D;
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class Login extends JFrame {
     private JPanel mainPanel;
@@ -29,19 +34,20 @@ public class Login extends JFrame {
     private ImageIcon userIcon;
     private ImageIcon lockIcon;
 
+    private TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAO(); 
     public Login() {
         initComponents();
         setLocationRelativeTo(null); // Đặt cửa sổ ở giữa màn hình
     }
 
     private void initComponents() {
-        // Thiết lập cửa sổ
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+       
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setTitle("Đăng Nhập - Hệ Thống Quản Lý Quán Cafe");
         setSize(1200, 550);
         setResizable(false);
         
-        // Khởi tạo các thành phần
+      
         mainPanel = new JPanel(new GridLayout(1, 2));
         leftPanel = createLeftPanel();
         rightPanel = createRightPanel();
@@ -81,12 +87,12 @@ public class Login extends JFrame {
             e.printStackTrace();
         }
 
-        // Thêm tiêu đề phía dưới
-        titleLabel = new JLabel("COFFEE CAFE");
-        titleLabel.setFont(new Font("Segoe Script", Font.BOLD, 40));
+        // Thêm tiêu đề o tren
+        titleLabel = new JLabel("Cafe Chill");
+        titleLabel.setFont(new Font("Segoe Script", Font.BOLD, 50));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(titleLabel, BorderLayout.SOUTH);
+        panel.add(titleLabel, BorderLayout.NORTH);
 
         return panel;
     }
@@ -122,22 +128,20 @@ public class Login extends JFrame {
         spacer2.setOpaque(false);
         
         // Tạo trường tên đăng nhập
-        JPanel usernamePanel = createInputPanel("Tài khoản", "/resources/user-icon.png");
         usernameField = new JTextField();
         usernameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         usernameField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200)),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        usernamePanel.add(usernameField);
+        JPanel usernamePanel = createInputPanel("Tài khoản", "/images/user_name-icon.png", usernameField);
+       
         
-     
-        JPanel passwordPanel = createInputPanel("Mật khẩu", "/resources/lock-icon.png");
         passwordField = new JPasswordField();
         passwordField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         passwordField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200)),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        passwordPanel.add(passwordField);
+                BorderFactory.createEmptyBorder(5, 0, 5, 5)));
+        JPanel passwordPanel = createInputPanel("Mật khẩu", "/images/password-icon.png" , passwordField);
         
       
         JPanel optionsPanel = new JPanel();
@@ -170,7 +174,7 @@ public class Login extends JFrame {
             }
         });
         
-        // Thêm sự kiện cho nút đăng nhập
+       
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 handleLogin(evt);
@@ -182,6 +186,7 @@ public class Login extends JFrame {
         panel.add(Box.createRigidArea(new Dimension(0, 10)));
         panel.add(subTitle);
         panel.add(spacer1);
+        panel.add(Box.createRigidArea(new Dimension(0,50)));
         panel.add(usernamePanel);
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
         panel.add(passwordPanel);
@@ -194,49 +199,62 @@ public class Login extends JFrame {
         return panel;
     }
     
-    private JPanel createInputPanel(String labelText, String iconPath) {
+    private JPanel createInputPanel(String labelText, String iconPath, JComponent inputField) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setOpaque(false);
+        panel.setOpaque(false); // Khỏi hiển thị nền
         panel.setMaximumSize(new Dimension(Short.MAX_VALUE, 70));
         
+        JPanel pn = new JPanel() ; 
+        pn.setLayout(new BoxLayout(pn, BoxLayout.X_AXIS));
+        pn.setOpaque(false);
         JLabel label = new JLabel(labelText);
         label.setFont(new Font("Segoe UI", Font.BOLD, 14));
         label.setForeground(new Color(51, 51, 51));
+      
+        pn.add(label) ; 
         
         JPanel inputContainer = new JPanel();
         inputContainer.setLayout(new BoxLayout(inputContainer, BoxLayout.X_AXIS));
         inputContainer.setOpaque(false);
-        
-    
+       
+      
         try {
             ImageIcon icon = new ImageIcon(getClass().getResource(iconPath));
             if (icon.getIconWidth() > 0) {
-                Image img = icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+                Image img = icon.getImage().getScaledInstance(18, 18, Image.SCALE_SMOOTH);
                 icon = new ImageIcon(img);
                 JLabel iconLabel = new JLabel(icon);
                 iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
                 inputContainer.add(iconLabel);
             }
         } catch (Exception e) {
-            
+            System.err.println("Lỗi icon: " + e.getMessage());
         }
-        
-        panel.add(label);
+
+        inputContainer.add(inputField);
+
+        panel.add(pn);
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
         panel.add(inputContainer);
-        
+
         return panel;
     }
+
 
     private void handleLogin(ActionEvent evt) {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
+        ArrayList<TaiKhoan> dsTk = taiKhoanDAO.dsTaiKhoan() ; 
+        TaiKhoan tk = new TaiKhoan() ; 
+        for(TaiKhoan x : dsTk) {
+        	if(x.getTenDangNhap().equals(username)) {
+        		tk = x ; 
+        	}
+        }
+        String validPassword = tk.getMatKhau();
 
-        String validUsername = "admin";
-        String validPassword = "123";
-
-        if (username.equals(validUsername) && password.equals(validPassword)) {
+        if (password.equals(validPassword)) {
             JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
             HeThongQuanLyQuanCaPhe cafeSys = new HeThongQuanLyQuanCaPhe();
             cafeSys.setVisible(true);
@@ -249,8 +267,6 @@ public class Login extends JFrame {
     }
 
     public static void main(String[] args) {
-
-        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 new Login().setVisible(true);

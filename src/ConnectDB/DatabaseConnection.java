@@ -16,7 +16,6 @@ public class DatabaseConnection {
   
     private DatabaseConnection() {
         try {
-            // Load SQL Server JDBC driver
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
