@@ -1,5 +1,5 @@
 package entities;
-
+//Người làm phạm thanh huy 
 public class TaiKhoan {
 	private String tenDangNhap ; 
 	private String matKhau ;

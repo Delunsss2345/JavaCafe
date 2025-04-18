@@ -1,5 +1,5 @@
 package dao;
-
+//Người làm phạm thanh huy
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -76,7 +76,7 @@ public class SanPhamDAO {
 
             // Validate trạng thái
             String trangThai = sanPham.getTrangThai();
-            if (!trangThai.equals("Đang bán") && !trangThai.equals("Hết hàng") && !trangThai.equals("Ngưng Bán")) {
+            if (!trangThai.equalsIgnoreCase("Đang bán") &&  !trangThai.equals("Hết hàng") && !trangThai.equals("Ngưng Bán")) {
                 throw new SQLException("Giá trị TrangThai không hợp lệ");
             }
             stmt.setString(5, trangThai);
@@ -136,33 +136,6 @@ public class SanPhamDAO {
         }
     }
 
-    // Tìm kiếm sản phẩm
-    public List<SanPham> searchSanPham(String keyword) {
-        String sql = "SELECT sp.*, lsp.TenLoai, lsp.MoTa as MoTaLoai, lsp.Icon " +
-                    "FROM SanPham sp " +
-                    "LEFT JOIN LoaiSanPham lsp ON sp.MaLoai = lsp.MaLoai " +
-                    "WHERE sp.TenSanPham LIKE ? OR sp.MoTa LIKE ? " +
-                    "ORDER BY sp.NgayCapNhat DESC";
-        
-        List<SanPham> list = new ArrayList<>();
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, "%" + keyword + "%");
-            stmt.setString(2, "%" + keyword + "%");
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapResultSetToSanPham(rs));
-                }
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi tìm kiếm sản phẩm: " + keyword, e);
-        }
-        return list;
-    }
-
     // Lấy sản phẩm theo loại
     public List<SanPham> getSanPhamByLoai(int maLoai) {
         String sql = " SELECT sp.*, lsp.TenLoai, lsp.MoTa as MoTaLoai, lsp.Icon " +
@@ -208,7 +181,6 @@ public class SanPhamDAO {
         sanPham.setTrangThai(rs.getString("TrangThai"));
         sanPham.setHinhAnh(rs.getString("HinhAnh"));
         
-        // Xử lý ngày tháng
         Timestamp ngayTao = rs.getTimestamp("NgayTao");
         Timestamp ngayCapNhat = rs.getTimestamp("NgayCapNhat");
         if (ngayTao != null) {
