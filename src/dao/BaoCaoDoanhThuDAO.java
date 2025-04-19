@@ -12,7 +12,10 @@ public class BaoCaoDoanhThuDAO {
     private Connection connection;
 
     public BaoCaoDoanhThuDAO() throws SQLException {
-        this.connection = DatabaseConnection.getInstance().getConnection();
+    	this.connection = DatabaseConnection.getInstance().getConnection();
+        if (this.connection == null || this.connection.isClosed()) {
+            throw new SQLException("Failed to establish a database connection.");
+        }
     }
     
 
@@ -42,7 +45,9 @@ public class BaoCaoDoanhThuDAO {
         String whereClause = generateDateWhereClause("NgayTao", startDate, endDate);
         sql += whereClause;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            // Set parameters for the date range
             setDateParameters(ps, startDate, endDate);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -58,7 +63,8 @@ public class BaoCaoDoanhThuDAO {
         String whereClause = generateDateWhereClause("NgayTao", startDate, endDate);
         sql += whereClause;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             setDateParameters(ps, startDate, endDate);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -75,7 +81,8 @@ public class BaoCaoDoanhThuDAO {
         String whereClause = generateDateWhereClause("NgayTao", startDate, endDate);
         sql += whereClause + " GROUP BY CAST(NgayTao AS DATE) ORDER BY Ngay";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             setDateParameters(ps, startDate, endDate);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -92,7 +99,8 @@ public class BaoCaoDoanhThuDAO {
         String whereClause = generateDateWhereClause("NgayTao", startDate, endDate);
         sql += whereClause + " GROUP BY DATEPART(year, NgayTao), DATEPART(month, NgayTao) ORDER BY Nam, Thang";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             setDateParameters(ps, startDate, endDate);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -111,7 +119,8 @@ public class BaoCaoDoanhThuDAO {
         String whereClause = generateDateWhereClause("HD.NgayTao", startDate, endDate);
         sql += whereClause + " GROUP BY NV.Ho, NV.Ten ORDER BY DoanhThu DESC";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             setDateParameters(ps, startDate, endDate);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -132,7 +141,8 @@ public List<Entry<String, Integer>> getSanPhamBanChayNhat(Date startDate, Date e
     String whereClause = generateDateWhereClause("HD.NgayTao", startDate, endDate);
     sql += whereClause + " GROUP BY SP.TenSanPham ORDER BY TongSoLuong DESC";
 
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+    try (Connection connection = DatabaseConnection.getInstance().getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
         setDateParameters(ps, startDate, endDate);
         try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -157,7 +167,8 @@ public List<Entry<String, Integer>> getSanPhamBanChayNhat(Date startDate, Date e
         String whereClause = generateDateWhereClause("HD.NgayTao", startDate, endDate);
         sql += whereClause + " GROUP BY SP.TenSanPham ORDER BY TongDoanhThu DESC";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             setDateParameters(ps, startDate, endDate);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -180,7 +191,8 @@ public List<Entry<String, Integer>> getSanPhamBanChayNhat(Date startDate, Date e
         String whereClause = generateDateWhereClause("HD.NgayTao", startDate, endDate);
         sql += whereClause;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             setDateParameters(ps, startDate, endDate);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -201,7 +213,8 @@ public List<Entry<String, Integer>> getSanPhamBanChayNhat(Date startDate, Date e
 		String sql = "SELECT MONTH(NgayTao) AS Thang, SUM(TongTien) AS DoanhThu "
 				+ "FROM HoaDon WHERE YEAR(NgayTao) = ? " + "GROUP BY MONTH(NgayTao) ORDER BY Thang";
 
-		try (PreparedStatement ps = connection.prepareStatement(sql)) {
+		try (Connection connection = DatabaseConnection.getInstance().getConnection();
+	             PreparedStatement ps = connection.prepareStatement(sql)) {
 			ps.setInt(1, nam);
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
