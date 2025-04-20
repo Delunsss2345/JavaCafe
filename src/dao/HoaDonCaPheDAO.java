@@ -9,11 +9,24 @@ import java.util.List;
 import ConnectDB.DatabaseConnection;
 
 public class HoaDonCaPheDAO {
+    // Phương thức bảo vệ để kiểm tra kết nối
+    private Connection getSafeConnection() throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null || conn.isClosed()) {
+            // Nếu kết nối đã đóng, thử lấy kết nối mới
+            conn = DatabaseConnection.getInstance().getConnection();
+            if (conn == null || conn.isClosed()) {
+                throw new SQLException("Không thể thiết lập kết nối đến cơ sở dữ liệu");
+            }
+        }
+        return conn;
+    }
+    
     // Thêm hóa đơn mới - để SQL Server tự tăng MaHD
     public int insertHoaDon(HoaDon hd) {
         String sql = "INSERT INTO HoaDon (NgayTao, TongTien, TienKhachTra, TienThua, MaNV, MaKH) VALUES (?, ?, ?, ?, ?, ?)";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = getSafeConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             ps.setTimestamp(1, Timestamp.valueOf(hd.getNgayTao()));
@@ -43,7 +56,7 @@ public class HoaDonCaPheDAO {
     public String getTenKhachHangByMaKH(int maKH) {
         String sql = "SELECT Ho, Ten FROM KhachHang WHERE MaKH = ?";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = getSafeConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, maKH);
@@ -64,7 +77,7 @@ public class HoaDonCaPheDAO {
         List<HoaDon> ds = new ArrayList<>();
         String sql = "SELECT * FROM HoaDon";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = getSafeConnection();
              Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
 
@@ -90,7 +103,7 @@ public class HoaDonCaPheDAO {
     public HoaDon getHoaDonByMaHD(int maHD) {
         String sql = "SELECT * FROM HoaDon WHERE MaHD = ?";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = getSafeConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, maHD);
@@ -118,7 +131,7 @@ public class HoaDonCaPheDAO {
     public boolean deleteHoaDon(int maHD) {
         String sql = "DELETE FROM HoaDon WHERE MaHD = ?";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = getSafeConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, maHD);
@@ -134,7 +147,7 @@ public class HoaDonCaPheDAO {
     public boolean taoHoaDon(HoaDon hd, List<ChiTietHoaDonCaPhe> dsCT) {
         Connection conn = null;
         try {
-            conn = DatabaseConnection.getInstance().getConnection();
+            conn = getSafeConnection();
             conn.setAutoCommit(false);
 
             // Insert hóa đơn
