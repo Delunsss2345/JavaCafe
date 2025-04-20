@@ -1,9 +1,10 @@
 package entities;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 public class KhachHang {
-    private int maKhachHang;
+    private long maKhachHang;  // Đổi từ int sang long để tránh lỗi số học lớn
     private String ho;
     private String ten;
     private String gioiTinh;
@@ -11,13 +12,19 @@ public class KhachHang {
     private Date ngaySinh;
     private DiaChi diaChi;
     private String soDienThoai;
+    private String email;
+    private int diemTichLuy;
+    private Timestamp ngayDangKy;
 
+    // Constructor mặc định
     public KhachHang() {
     }
 
-    public KhachHang(int maKhachHang, String ho, String ten, String gioiTinh, 
-                    String cmnd, Date ngaySinh, DiaChi diaChi, String soDienThoai) {
-        this.maKhachHang = maKhachHang;
+    // Constructor với tất cả tham số, loại bỏ maKhachHang = 0
+    public KhachHang(long maKhachHang, String ho, String ten, String gioiTinh,
+                     String cmnd, Date ngaySinh, DiaChi diaChi, String soDienThoai,
+                     String email, int diemTichLuy, Timestamp ngayDangKy) {
+        this.maKhachHang = maKhachHang; // Gán mã khách hàng trực tiếp
         this.ho = ho;
         this.ten = ten;
         this.gioiTinh = gioiTinh;
@@ -25,14 +32,31 @@ public class KhachHang {
         this.ngaySinh = ngaySinh;
         this.diaChi = diaChi;
         this.soDienThoai = soDienThoai;
+        this.email = email;
+        this.diemTichLuy = diemTichLuy;
+        this.ngayDangKy = ngayDangKy;
+    }
+
+    // Constructor khi chỉ biết tên khách hàng (ví dụ cho việc tạo khách hàng mới)
+    public KhachHang(String ten) {
+        this.ten = ten;
+        this.ho = "";
+        this.gioiTinh = "Khác";
+        this.cmnd = "";
+        this.ngaySinh = Date.valueOf("2000-01-01");
+        this.diaChi = new DiaChi(1, ten, ten, ten, ten, ten, ten); // Địa chỉ mặc định
+        this.soDienThoai = "";
+        this.email = "";
+        this.diemTichLuy = 0;
+        this.ngayDangKy = new Timestamp(System.currentTimeMillis());
     }
 
     // Getters and Setters
-    public int getMaKhachHang() {
+    public long getMaKhachHang() {
         return maKhachHang;
     }
 
-    public void setMaKhachHang(int maKhachHang) {
+    public void setMaKhachHang(long maKhachHang) {
         this.maKhachHang = maKhachHang;
     }
 
@@ -90,6 +114,30 @@ public class KhachHang {
 
     public void setSoDienThoai(String soDienThoai) {
         this.soDienThoai = soDienThoai;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public int getDiemTichLuy() {
+        return diemTichLuy;
+    }
+
+    public void setDiemTichLuy(int diemTichLuy) {
+        this.diemTichLuy = diemTichLuy;
+    }
+
+    public Timestamp getNgayDangKy() {
+        return ngayDangKy;
+    }
+
+    public void setNgayDangKy(Timestamp ngayDangKy) {
+        this.ngayDangKy = ngayDangKy;
     }
 
     @Override
