@@ -10,16 +10,13 @@ import ConnectDB.DatabaseConnection;
 import entities.KhachHang;
 
 public class KhachHangDAO {
-    // Xóa trường conn và constructor
     
     public boolean insertKhachHang(KhachHang kh) {
         String sql = "INSERT INTO KhachHang(MaKH, ho, ten, gioiTinh, soDienThoai, email, diemTichLuy, ngayDangKy) " +
                      "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
         
-        Connection conn = null;
-        try {
-            conn = DatabaseConnection.getInstance().getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql);
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, kh.getMaKhachHang());
             stmt.setString(2, kh.getHo());
@@ -31,14 +28,10 @@ public class KhachHangDAO {
             stmt.setTimestamp(8, kh.getNgayDangKy());
             
             int rowsAffected = stmt.executeUpdate();
-            stmt.close();
-            
             return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        } finally {
-            DatabaseConnection.getInstance().closeConnection();
         }
     }
     
@@ -53,25 +46,17 @@ public class KhachHangDAO {
 
     public boolean checkMaKHTonTai(long maKH) {
         String sql = "SELECT MaKH FROM KhachHang WHERE MaKH = ?";
-        Connection conn = null;
         
-        try {
-            conn = DatabaseConnection.getInstance().getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql);
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, maKH);
-            ResultSet rs = stmt.executeQuery();
-            boolean result = rs.next(); // Nếu có thì trùng
-            
-            rs.close();
-            stmt.close();
-            
-            return result;
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next(); // Nếu có thì trùng
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return true; // Mặc định tránh trùng nếu lỗi
-        } finally {
-            DatabaseConnection.getInstance().closeConnection();
         }
     }
 }
