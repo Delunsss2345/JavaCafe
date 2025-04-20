@@ -22,12 +22,27 @@ import entities.HoaDon;
 
 public class frmChiTietHoaDon extends JFrame {
     private JTextArea txtChiTiet;
-    public boolean inResult;
+    public boolean inResult = false;
+    
+    private String maNV, tenNV, maKH, tenKH;
+    private double tongTien, tienKhachTra;
+    private LocalDateTime gioVao, gioRa;
+    private List<ChiTietHoaDonCaPhe> danhSachMon;
 
     public frmChiTietHoaDon(String maNV, String tenNV, String maKH, String tenKH, double tongTien,
-                            LocalDateTime gioVao, LocalDateTime gioRa,
-                            List<ChiTietHoaDonCaPhe> danhSachMon,
-                            int maDH, double tienKhachTra) {
+                           LocalDateTime gioVao, LocalDateTime gioRa,
+                           List<ChiTietHoaDonCaPhe> danhSachMon,
+                           int maDH, double tienKhachTra) {
+
+        this.maNV = maNV;
+        this.tenNV = tenNV;
+        this.maKH = maKH;
+        this.tenKH = tenKH;
+        this.tongTien = tongTien;
+        this.gioVao = gioVao;
+        this.gioRa = gioRa;
+        this.danhSachMon = danhSachMon;
+        this.tienKhachTra = tienKhachTra;
 
         setTitle("Chi Tiết Hóa Đơn");
         setSize(600, 750);
@@ -35,6 +50,7 @@ public class frmChiTietHoaDon extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
+        // Tạo nội dung hóa đơn
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         String gioVaoStr = dtf.format(gioVao);
         String gioRaStr = dtf.format(gioRa);
@@ -77,6 +93,7 @@ public class frmChiTietHoaDon extends JFrame {
         txtChiTiet.setText(sb.toString());
         add(new JScrollPane(txtChiTiet), BorderLayout.CENTER);
 
+        // Tạo QR code chuyển khoản
         String thongTinChuyenKhoan = "Ngân hàng: MB Bank\nSố tài khoản: 1234567890\nTên: NGUYEN VAN A\nNội dung: " + maKH;
         BufferedImage qrImage = QRGenerator.generateQR(thongTinChuyenKhoan, 200, 200);
         JLabel lblQR = new JLabel(new ImageIcon(qrImage));
@@ -84,6 +101,7 @@ public class frmChiTietHoaDon extends JFrame {
         lblQR.setHorizontalAlignment(JLabel.CENTER);
         add(lblQR, BorderLayout.SOUTH);
 
+        // Panel chứa nút In hóa đơn
         JPanel topPanel = new JPanel();
         JButton btnIn = new JButton("In hóa đơn");
         topPanel.add(btnIn);
@@ -91,27 +109,41 @@ public class frmChiTietHoaDon extends JFrame {
 
         btnIn.addActionListener((ActionEvent e) -> {
             try {
+                // Giả lập in hóa đơn
                 boolean done = txtChiTiet.print();
                 if (done) {
+                    // Kết nối CSDL và lưu hóa đơn
                     Connection conn = DatabaseConnection.getInstance().getConnection();
                     HoaDonCaPheDAO hoaDonDAO = new HoaDonCaPheDAO(conn);
                     ChiTietHoaDonCaPheDAO chiTietDAO = new ChiTietHoaDonCaPheDAO(conn);
 
-                    // Lấy mã nhân viên từ maNV và mã hóa đơn
+                    // Chuyển mã nhân viên từ chuỗi sang số
                     int maNVInt = Integer.parseInt(maNV);
 
-                    // Tạo đối tượng HoaDon và lưu vào cơ sở dữ liệu
+                    // Tạo đối tượng HoaDon
                     HoaDon hoaDon = new HoaDon(0, gioRa, tongTien, tienKhachTra, tienKhachTra - tongTien, maNVInt, Integer.parseInt(maKH));
 
+                    // Thêm hóa đơn vào CSDL và lấy mã hóa đơn tự động sinh
                     int maHD = hoaDonDAO.insertHoaDon(hoaDon);
                     if (maHD > 0) {
+                        // Thêm các chi tiết hóa đơn
+                        boolean allSuccess = true;
                         for (ChiTietHoaDonCaPhe ct : danhSachMon) {
-                            ct.setMaHoaDon((maHD));
-                            chiTietDAO.insertChiTiet(ct);
+                            ct.setMaHoaDon(maHD);
+                            boolean success = chiTietDAO.insertChiTiet(ct);
+                            if (!success) {
+                                allSuccess = false;
+                                break;
+                            }
                         }
-                        JOptionPane.showMessageDialog(this, "In hóa đơn & lưu vào hệ thống thành công!");
-                        this.dispose(); // Đóng form
-                        inResult = true;
+
+                        if (allSuccess) {
+                            JOptionPane.showMessageDialog(this, "In hóa đơn & lưu vào hệ thống thành công!");
+                            inResult = true;
+                            this.dispose(); // Đóng form sau khi in
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Có lỗi khi lưu chi tiết hóa đơn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        }
                     } else {
                         JOptionPane.showMessageDialog(this, "Không thể lưu hóa đơn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                     }
@@ -125,6 +157,12 @@ public class frmChiTietHoaDon extends JFrame {
         });
     }
 
+    // Constructor trống để tương thích với code đã có
+    public frmChiTietHoaDon() {
+        this("", "", "", "", 0, LocalDateTime.now(), LocalDateTime.now(), null, 0, 0);
+    }
+
+    // Lớp tiện ích để tạo mã QR
     static class QRGenerator {
         public static BufferedImage generateQR(String data, int width, int height) {
             try {
