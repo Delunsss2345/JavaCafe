@@ -1,6 +1,9 @@
 package gui;
 //Người làm Phạm Thanh Huy
 import javax.swing.*;
+
+import entities.TaiKhoan;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,14 +15,17 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel panelMenu, panelNoiDung;
     private CardLayout cardLayout;
+    private static TaiKhoan taiKhoanLogin ; 
 
     // Các panel cho các màn hình khác nhau
     private ManHinhTrangChu manHinhTrangChu;
     private JPanel quanLySanPham;
     private JPanel quanLyHoaDon;
     private JPanel frmQuanLyHoaDon;
+    private JPanel baoCaoDoanhThu;
 
-    public HeThongQuanLyQuanCaPhe() {
+    public HeThongQuanLyQuanCaPhe(TaiKhoan tk) {
+    	this.taiKhoanLogin = tk ; 
         // Thiết lập frame chính
         setTitle("Hệ Thống Quản Lý Quán Cà Phê");
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -32,18 +38,20 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         panelNoiDung = new JPanel(cardLayout);
 
         // Khởi tạo các panel cho từng màn hình
+  
         manHinhTrangChu = new ManHinhTrangChu();
-        quanLySanPham = new QuanLySanPham();
-//        quanLyHoaDon = new frmQuanLyHoaDon();
-    	
-//        baoCaoDoanhThu = new BaoCaoDoanhThu();
+        quanLySanPham = new QuanLySanPham(tk);
+        quanLyHoaDon = new frmQuanLyHoaDon();
+        baoCaoDoanhThu = new BaoCaoDoanhThu();
+      
+        
 
         // Thêm các panel vào panelNoiDung
       
         panelNoiDung.add(manHinhTrangChu, "TrangChu");
         panelNoiDung.add(quanLySanPham, "SanPham");
-		/* panelNoiDung.add(quanLyHoaDon, "HoaDon"); */
-////        panelNoiDung.add(baoCaoDoanhThu, "DoanhThu");
+		panelNoiDung.add(quanLyHoaDon, "HoaDon");
+        panelNoiDung.add(baoCaoDoanhThu, "DoanhThu");
 
         // Tạo panel menu ở bên trái
         panelMenu = new JPanel();
@@ -55,7 +63,7 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         JButton btnSanPham = taoNutMenu("Sản Phẩm", "src\\images\\product.png");
         JButton btnHoaDon = taoNutMenu("Hóa Đơn", "src\\images\\rece.png");
         JButton btnThongKe = taoNutMenu("Thống Kê", "src\\images\\sta.png");
-        JButton btnDangXuat = taoNutMenu("ĐĂNG XUẤT", "src\\images\\logout.png");
+        JButton btnDangXuat = taoNutMenu("Đăng xuất", "src\\images\\logout.png");
 
         // Thêm sự kiện cho các nút menu
         btnTrangChu.addActionListener(e -> {
@@ -109,20 +117,28 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
 
     // Hiển thị màn hình quản lý sản phẩm
     private void hienThiQuanLySanPham() {
-        cardLayout.show(panelNoiDung, "SanPham");
+    	cardLayout.show(panelNoiDung, "SanPham");
     }
 
     // Hiển thị màn hình quản lý hóa đơn
     private void hienThiQuanLyHoaDon() {
-        cardLayout.show(panelNoiDung, "HoaDon");
+    	cardLayout.show(panelNoiDung, "HoaDon");     
     }
 
     // Hiển thị màn hình báo cáo doanh thu
     private void hienThiBaoCaoDoanhThu() {
-        cardLayout.show(panelNoiDung, "DoanhThu");
+    	if(taiKhoanLogin.getQuyen().getMaQuyen() == 1) {
+    		cardLayout.show(panelNoiDung, "DoanhThu");
+    	}
+    	else {
+    		JOptionPane.showMessageDialog(null, "Chỉ có quản lý mới có quyền báo cáo doanh thu");
+    	}
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(HeThongQuanLyQuanCaPhe::new);
+        SwingUtilities.invokeLater(() -> {
+            new HeThongQuanLyQuanCaPhe(taiKhoanLogin);
+        });
     }
+
 }

@@ -10,11 +10,9 @@ public class ChiTietHoaDonCaPheDAO {
     
     // Thêm phương thức kiểm tra sản phẩm tồn tại
     private boolean isSanPhamExists(int maSP) {
-        String sql = "SELECT COUNT(*) FROM SanPham WHERE MaSanPham = ?";
-        Connection conn = null;
-        
+        String sql = "SELECT COUNT(*) FROM SanPham WHERE MaSanPham = ?"; 
         try {
-            conn = DatabaseConnection.getInstance().getConnection();
+        	Connection conn = DatabaseConnection.getInstance().getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             
             ps.setInt(1, maSP);
@@ -39,10 +37,9 @@ public class ChiTietHoaDonCaPheDAO {
     // Kiểm tra hóa đơn tồn tại
     private boolean isHoaDonExists(int maHD) {
         String sql = "SELECT COUNT(*) FROM HoaDon WHERE MaHD = ?";
-        Connection conn = null;
         
         try {
-            conn = DatabaseConnection.getInstance().getConnection();
+        	Connection conn = DatabaseConnection.getInstance().getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             
             ps.setInt(1, maHD);
@@ -80,10 +77,10 @@ public class ChiTietHoaDonCaPheDAO {
         
         String sql = "INSERT INTO ChiTietHoaDon (MaHD, MaSP, TenSanPham, SoLuong, DonGia, ThanhTien) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
-        Connection conn = null;
+     
         
         try {
-            conn = DatabaseConnection.getInstance().getConnection();
+        	Connection conn = DatabaseConnection.getInstance().getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             
             ps.setInt(1, ct.getMaHoaDon());
@@ -109,10 +106,9 @@ public class ChiTietHoaDonCaPheDAO {
     public List<ChiTietHoaDonCaPhe> getChiTietByMaHoaDon(int maHoaDon) {
         List<ChiTietHoaDonCaPhe> ds = new ArrayList<>();
         String sql = "SELECT * FROM ChiTietHoaDon WHERE MaHD = ?";
-        Connection conn = null;
         
         try {
-            conn = DatabaseConnection.getInstance().getConnection();
+        	  Connection conn = DatabaseConnection.getInstance().getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             
             ps.setInt(1, maHoaDon);
@@ -140,10 +136,10 @@ public class ChiTietHoaDonCaPheDAO {
     
     public boolean deleteChiTietByMaHoaDon(int maHoaDon) {
         String sql = "DELETE FROM ChiTietHoaDon WHERE MaHD = ?";
-        Connection conn = null;
+       
         
         try {
-            conn = DatabaseConnection.getInstance().getConnection();
+        	  Connection conn = DatabaseConnection.getInstance().getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             
             ps.setInt(1, maHoaDon);

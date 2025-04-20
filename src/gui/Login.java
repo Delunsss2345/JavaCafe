@@ -33,7 +33,7 @@ public class Login extends JFrame {
     private ImageIcon logoIcon;
     private ImageIcon userIcon;
     private ImageIcon lockIcon;
-
+    private TaiKhoan tk = new TaiKhoan() ; 
     private TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAO(); 
     public Login() {
         initComponents();
@@ -246,17 +246,19 @@ public class Login extends JFrame {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
         ArrayList<TaiKhoan> dsTk = taiKhoanDAO.dsTaiKhoan() ; 
-        TaiKhoan tk = new TaiKhoan() ; 
+       
         for(TaiKhoan x : dsTk) {
-        	if(x.getTenDangNhap().equals(username)) {
+        	if(x.getTenDangNhap().equalsIgnoreCase(username)) {
         		tk = x ; 
+        		System.out.println(tk.getQuyen().getMaQuyen());
         	}
+        	System.out.println(x.getTenDangNhap());
         }
         String validPassword = tk.getMatKhau();
 
         if (password.equals(validPassword)) {
             JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
-            HeThongQuanLyQuanCaPhe cafeSys = new HeThongQuanLyQuanCaPhe();
+            HeThongQuanLyQuanCaPhe cafeSys = new HeThongQuanLyQuanCaPhe(tk);
             cafeSys.setVisible(true);
             this.dispose();
         } else {

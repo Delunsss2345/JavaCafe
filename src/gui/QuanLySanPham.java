@@ -4,6 +4,7 @@ import dao.LoaiSanPhamDAO;
 import dao.SanPhamDAO;
 import entities.LoaiSanPham;
 import entities.SanPham;
+import entities.TaiKhoan;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -27,9 +28,10 @@ public class QuanLySanPham extends JPanel {
     private JPanel panelButton;  
     private JButton btnThem, btnSua, btnXoa;
     private int currentMaLoai; // Track the current category ID
+    private TaiKhoan loginTaiKhoan ; 
     
-
-    public QuanLySanPham() {
+    public QuanLySanPham(TaiKhoan tk) {
+    	this.loginTaiKhoan = tk ; 
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         dinhDangTien = new DecimalFormat("#,### VNĐ");
@@ -51,7 +53,7 @@ public class QuanLySanPham extends JPanel {
         JPanel panelCategory = new JPanel(new BorderLayout());
         panelCategory.setBorder(BorderFactory.createTitledBorder("Danh mục loại sản phẩm"));
 
-        String[] columnNames = {"Mã loại", "Tên loại", "Mô tả", "Icon"};
+        String[] columnNames = {"Mã loại", "Tên loại", "Mô tả"};
         modelLoaiSanPham = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -78,6 +80,13 @@ public class QuanLySanPham extends JPanel {
         panelCategory.add(scrollPane, BorderLayout.CENTER);
 
         JButton btnRefresh = new JButton("Làm mới");
+        btnRefresh = new JButton("Làm mới");
+        btnRefresh.setBackground(new Color(102, 187, 106)); 
+        btnRefresh.setForeground(Color.WHITE);
+        btnRefresh.setFocusPainted(false);
+        btnRefresh.setFont(new Font("Tahoma", Font.BOLD, 13));
+        btnRefresh.setMargin(new Insets(10, 20, 10, 20));
+
         btnRefresh.addActionListener(e -> loadLoaiSanPhamData());
         panelCategory.add(btnRefresh, BorderLayout.SOUTH);
 
@@ -102,25 +111,50 @@ public class QuanLySanPham extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(tableSanPham);
         panelProduct.add(scrollPane, BorderLayout.CENTER);
-
-        JLabel lblCurrentCategory = new JLabel("Chọn một loại sản phẩm để xem chi tiết");
+        JLabel lblCurrentCategory ;
+        if(loginTaiKhoan.getQuyen().getMaQuyen() == 1) {
+        	 lblCurrentCategory = new JLabel("Chọn một loại sản phẩm để chỉnh sửa");
+        }
+        else {
+        	 lblCurrentCategory = new JLabel("Nhân viên chọn sản phẩm để xoá");
+        }
         lblCurrentCategory.setHorizontalAlignment(SwingConstants.CENTER);
         panelProduct.add(lblCurrentCategory, BorderLayout.NORTH);
 
         JPanel panelActions = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         btnThem = new JButton("Thêm Sản Phẩm");
-        btnThem.addActionListener(e -> openAddProductDialog());
-        panelActions.add(btnThem);
+        btnThem.setBackground(new Color(52, 152, 219)); 
+        btnThem.setForeground(Color.WHITE);
+        btnThem.setFocusPainted(false);
+        btnThem.setFont(new Font("Tahoma", Font.BOLD, 13));
+        btnThem.setMargin(new Insets(8, 16, 8, 16));   
 
         btnSua = new JButton("Sửa Sản Phẩm");
-        btnSua.addActionListener(e -> openEditProductDialog());
-        panelActions.add(btnSua);
+        btnSua.setBackground(new Color(241, 196, 15));  
+        btnSua.setForeground(Color.WHITE); 
+        btnSua.setFocusPainted(false);
+        btnSua.setFont(new Font("Tahoma", Font.BOLD, 13));
+        btnSua.setMargin(new Insets(8, 16, 8, 16));
 
         btnXoa = new JButton("Xóa Sản Phẩm");
-        btnXoa.addActionListener(e -> openDeleteProductDialog());
-        panelActions.add(btnXoa);
+        btnXoa.setBackground(new Color(231, 76, 60)); 
+        btnXoa.setForeground(Color.WHITE);
+        btnXoa.setFocusPainted(false);
+        btnXoa.setFont(new Font("Tahoma", Font.BOLD, 13));
+        btnXoa.setMargin(new Insets(8, 16, 8, 16));
 
+
+       
+        btnThem.addActionListener(e -> openAddProductDialog());
+        btnSua.addActionListener(e -> openEditProductDialog());
+        btnXoa.addActionListener(e -> openDeleteProductDialog());
+   
+        if(loginTaiKhoan.getQuyen().getMaQuyen() == 1) {
+        	 panelActions.add(btnThem);
+        	 panelActions.add(btnSua);
+        }
+        panelActions.add(btnXoa);
         panelProduct.add(panelActions, BorderLayout.SOUTH);
 
         add(panelProduct, BorderLayout.CENTER);
