@@ -67,7 +67,7 @@ public class frmQuanLyHoaDon extends JPanel {
         // Kết nối CSDL và khởi tạo DAO
         try {
             conn = DatabaseConnection.getInstance().getConnection();
-            hoaDonDAO = new HoaDonCaPheDAO(conn);
+            hoaDonDAO = new HoaDonCaPheDAO();
             taiLaiDanhSachHoaDon();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Lỗi kết nối CSDL: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
