@@ -3,25 +3,65 @@ import entities.ChiTietHoaDonCaPhe;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import ConnectDB.DatabaseConnection;
+
 public class ChiTietHoaDonCaPheDAO {
-    private Connection conn;
-    public ChiTietHoaDonCaPheDAO(Connection conn) {
-        this.conn = conn;
-    }
+    // Xóa trường conn và constructor
     
     // Thêm phương thức kiểm tra sản phẩm tồn tại
     private boolean isSanPhamExists(int maSP) {
         String sql = "SELECT COUNT(*) FROM SanPham WHERE MaSanPham = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        
+        try {
+            conn = DatabaseConnection.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
             ps.setInt(1, maSP);
             ResultSet rs = ps.executeQuery();
+            boolean result = false;
             if (rs.next()) {
-                return rs.getInt(1) > 0;
+                result = rs.getInt(1) > 0;
             }
+            
+            rs.close();
+            ps.close();
+            
+            return result;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            DatabaseConnection.getInstance().closeConnection();
         }
-        return false;
+    }
+    
+    // Kiểm tra hóa đơn tồn tại
+    private boolean isHoaDonExists(int maHD) {
+        String sql = "SELECT COUNT(*) FROM HoaDon WHERE MaHD = ?";
+        Connection conn = null;
+        
+        try {
+            conn = DatabaseConnection.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            ps.setInt(1, maHD);
+            ResultSet rs = ps.executeQuery();
+            boolean result = false;
+            if (rs.next()) {
+                result = rs.getInt(1) > 0;
+            }
+            
+            rs.close();
+            ps.close();
+            
+            return result;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            DatabaseConnection.getInstance().closeConnection();
+        }
     }
     
     // Thêm một chi tiết hóa đơn với kiểm tra
@@ -40,41 +80,41 @@ public class ChiTietHoaDonCaPheDAO {
         
         String sql = "INSERT INTO ChiTietHoaDon (MaHD, MaSP, TenSanPham, SoLuong, DonGia, ThanhTien) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        
+        try {
+            conn = DatabaseConnection.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
             ps.setInt(1, ct.getMaHoaDon());
             ps.setInt(2, ct.getMaSanPham());
             ps.setString(3, ct.getTenSanPham());
             ps.setInt(4, ct.getSoLuong());
             ps.setDouble(5, ct.getDonGia());
             ps.setDouble(6, ct.getThanhTien());
-            return ps.executeUpdate() > 0;
+            
+            int result = ps.executeUpdate();
+            ps.close();
+            
+            return result > 0;
         } catch (SQLException e) {
             System.err.println("Lỗi SQL khi thêm chi tiết hóa đơn: " + e.getMessage());
             e.printStackTrace();
             return false;
+        } finally {
+            DatabaseConnection.getInstance().closeConnection();
         }
     }
     
-    // Phương thức kiểm tra hóa đơn tồn tại
-    private boolean isHoaDonExists(int maHD) {
-        String sql = "SELECT COUNT(*) FROM HoaDon WHERE MaHD = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, maHD);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-    
-    // Các phương thức khác giữ nguyên
     public List<ChiTietHoaDonCaPhe> getChiTietByMaHoaDon(int maHoaDon) {
         List<ChiTietHoaDonCaPhe> ds = new ArrayList<>();
         String sql = "SELECT * FROM ChiTietHoaDon WHERE MaHD = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        
+        try {
+            conn = DatabaseConnection.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
             ps.setInt(1, maHoaDon);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -87,20 +127,35 @@ public class ChiTietHoaDonCaPheDAO {
                 );
                 ds.add(ct);
             }
+            
+            rs.close();
+            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            DatabaseConnection.getInstance().closeConnection();
         }
         return ds;
     }
     
     public boolean deleteChiTietByMaHoaDon(int maHoaDon) {
         String sql = "DELETE FROM ChiTietHoaDon WHERE MaHD = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        
+        try {
+            conn = DatabaseConnection.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
             ps.setInt(1, maHoaDon);
-            return ps.executeUpdate() > 0;
+            int result = ps.executeUpdate();
+            ps.close();
+            
+            return result > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        } finally {
+            DatabaseConnection.getInstance().closeConnection();
         }
     }
 }
