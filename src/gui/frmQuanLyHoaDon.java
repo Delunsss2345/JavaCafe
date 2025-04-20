@@ -18,7 +18,7 @@ public class frmQuanLyHoaDon extends JPanel {
     private DefaultTableModel tableModel;
     private HoaDonCaPheDAO hoaDonDAO;
     private static final long serialVersionUID = 1L;
-    private Connection conn;
+    // Xóa biến conn vì lưu trữ kết nối lâu dài có thể gây ra vấn đề
 
     public frmQuanLyHoaDon() {
         setLayout(new BorderLayout());
@@ -64,56 +64,65 @@ public class frmQuanLyHoaDon extends JPanel {
         pnlControls.add(btnReload);
         add(pnlControls, BorderLayout.SOUTH);
 
-        // Kết nối CSDL và khởi tạo DAO
+        // Khởi tạo DAO và tải dữ liệu
         try {
-            conn = DatabaseConnection.getInstance().getConnection();
             hoaDonDAO = new HoaDonCaPheDAO();
             taiLaiDanhSachHoaDon();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Lỗi kết nối CSDL: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khởi tạo: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
 
     // Tải danh sách hóa đơn từ CSDL
     public void taiLaiDanhSachHoaDon() {
-        List<HoaDon> danhSach = hoaDonDAO.getAllHoaDon();
-        tableModel.setRowCount(0); // Xóa dữ liệu cũ
-        
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        
-        for (HoaDon hoaDon : danhSach) {
-            Object[] row = new Object[] {
-                hoaDon.getMaHD(),
-                hoaDon.getNgayTao().format(dateFormatter),
-                hoaDon.getNgayTao().format(timeFormatter),
-                hoaDon.getMaNV(),
-                hoaDon.getMaKH(),
-                String.format("%,.0f", hoaDon.getTongTien()),
-                String.format("%,.0f", hoaDon.getTienKhachTra()),
-                String.format("%,.0f", hoaDon.getTienThua())
-            };
-            tableModel.addRow(row);
+        try {
+            List<HoaDon> danhSach = hoaDonDAO.getAllHoaDon();
+            tableModel.setRowCount(0); // Xóa dữ liệu cũ
+            
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+            
+            for (HoaDon hoaDon : danhSach) {
+                Object[] row = new Object[] {
+                    hoaDon.getMaHD(),
+                    hoaDon.getNgayTao().format(dateFormatter),
+                    hoaDon.getNgayTao().format(timeFormatter),
+                    hoaDon.getMaNV(),
+                    hoaDon.getMaKH(),
+                    String.format("%,.0f", hoaDon.getTongTien()),
+                    String.format("%,.0f", hoaDon.getTienKhachTra()),
+                    String.format("%,.0f", hoaDon.getTienThua())
+                };
+                tableModel.addRow(row);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi tải dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 
     // Tải lại dữ liệu (xử lý sự kiện khi nhấn nút "Tải lại")
     private void loadData() {
-        taiLaiDanhSachHoaDon();
+        try {
+            taiLaiDanhSachHoaDon();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi tải lại dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
     }
     
     // Xem chi tiết hóa đơn đang chọn
     private void xemChiTietHoaDon() {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một hóa đơn để xem chi tiết!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-        
-        int maHD = Integer.parseInt(table.getValueAt(selectedRow, 0).toString());
-        
         try {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn một hóa đơn để xem chi tiết!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            
+            int maHD = Integer.parseInt(table.getValueAt(selectedRow, 0).toString());
+            
             // Lấy thông tin hóa đơn từ CSDL
             HoaDon hoaDon = hoaDonDAO.getHoaDonByMaHD(maHD);
             

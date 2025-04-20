@@ -10,17 +10,26 @@ import ConnectDB.DatabaseConnection;
 import entities.KhachHang;
 
 public class KhachHangDAO {
-    // Xóa trường conn và constructor
+    // Phương thức bảo vệ để kiểm tra kết nối
+    private Connection getSafeConnection() throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null || conn.isClosed()) {
+            // Nếu kết nối đã đóng, thử lấy kết nối mới
+            conn = DatabaseConnection.getInstance().getConnection();
+            if (conn == null || conn.isClosed()) {
+                throw new SQLException("Không thể thiết lập kết nối đến cơ sở dữ liệu");
+            }
+        }
+        return conn;
+    }
     
     public boolean insertKhachHang(KhachHang kh) {
         String sql = "INSERT INTO KhachHang(MaKH, ho, ten, gioiTinh, soDienThoai, email, diemTichLuy, ngayDangKy) " +
-                     "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        Connection conn = null;
-        try {
-            conn = DatabaseConnection.getInstance().getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            
+                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = getSafeConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setLong(1, kh.getMaKhachHang());
             stmt.setString(2, kh.getHo());
             stmt.setString(3, kh.getTen());
@@ -29,19 +38,15 @@ public class KhachHangDAO {
             stmt.setString(6, kh.getEmail());
             stmt.setInt(7, kh.getDiemTichLuy());
             stmt.setTimestamp(8, kh.getNgayDangKy());
-            
+
             int rowsAffected = stmt.executeUpdate();
-            stmt.close();
-            
             return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        } finally {
-            DatabaseConnection.getInstance().closeConnection();
         }
     }
-    
+
     public long generateUniqueMaKH() {
         Random rand = new Random();
         long maKH;
@@ -53,25 +58,17 @@ public class KhachHangDAO {
 
     public boolean checkMaKHTonTai(long maKH) {
         String sql = "SELECT MaKH FROM KhachHang WHERE MaKH = ?";
-        Connection conn = null;
-        
-        try {
-            conn = DatabaseConnection.getInstance().getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            
+
+        try (Connection conn = getSafeConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setLong(1, maKH);
-            ResultSet rs = stmt.executeQuery();
-            boolean result = rs.next(); // Nếu có thì trùng
-            
-            rs.close();
-            stmt.close();
-            
-            return result;
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next(); // Nếu có thì trùng
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return true; // Mặc định tránh trùng nếu lỗi
-        } finally {
-            DatabaseConnection.getInstance().closeConnection();
         }
     }
 }
