@@ -27,7 +27,7 @@ public class frmLapHoaDon extends JFrame {
 
         try {
             conn = DatabaseConnection.getInstance().getConnection();
-            khachHangDAO = new KhachHangDAO(conn);
+            khachHangDAO = new KhachHangDAO();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Lỗi kết nối CSDL: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
