@@ -114,8 +114,8 @@ public class frmChiTietHoaDon extends JFrame {
                 if (done) {
                     // Kết nối CSDL và lưu hóa đơn
                     Connection conn = DatabaseConnection.getInstance().getConnection();
-                    HoaDonCaPheDAO hoaDonDAO = new HoaDonCaPheDAO(conn);
-                    ChiTietHoaDonCaPheDAO chiTietDAO = new ChiTietHoaDonCaPheDAO(conn);
+                    HoaDonCaPheDAO hoaDonDAO = new HoaDonCaPheDAO();
+                    ChiTietHoaDonCaPheDAO chiTietDAO = new ChiTietHoaDonCaPheDAO();
 
                     // Chuyển mã nhân viên từ chuỗi sang số
                     int maNVInt = Integer.parseInt(maNV);
