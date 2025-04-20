@@ -6,11 +6,24 @@ import java.util.List;
 import ConnectDB.DatabaseConnection;
 
 public class ChiTietHoaDonCaPheDAO {
+    // Phương thức bảo vệ để kiểm tra kết nối
+    private Connection getSafeConnection() throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null || conn.isClosed()) {
+            // Nếu kết nối đã đóng, thử lấy kết nối mới
+            conn = DatabaseConnection.getInstance().getConnection();
+            if (conn == null || conn.isClosed()) {
+                throw new SQLException("Không thể thiết lập kết nối đến cơ sở dữ liệu");
+            }
+        }
+        return conn;
+    }
+    
     // Kiểm tra sản phẩm tồn tại
     private boolean isSanPhamExists(int maSP) {
         String sql = "SELECT COUNT(*) FROM SanPham WHERE MaSanPham = ?";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = getSafeConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, maSP);
@@ -30,7 +43,7 @@ public class ChiTietHoaDonCaPheDAO {
     private boolean isHoaDonExists(int maHD) {
         String sql = "SELECT COUNT(*) FROM HoaDon WHERE MaHD = ?";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = getSafeConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, maHD);
@@ -63,7 +76,7 @@ public class ChiTietHoaDonCaPheDAO {
         String sql = "INSERT INTO ChiTietHoaDon (MaHD, MaSP, TenSanPham, SoLuong, DonGia, ThanhTien) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = getSafeConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, ct.getMaHoaDon());
@@ -86,7 +99,7 @@ public class ChiTietHoaDonCaPheDAO {
         List<ChiTietHoaDonCaPhe> ds = new ArrayList<>();
         String sql = "SELECT * FROM ChiTietHoaDon WHERE MaHD = ?";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = getSafeConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, maHoaDon);
@@ -111,7 +124,7 @@ public class ChiTietHoaDonCaPheDAO {
     public boolean deleteChiTietByMaHoaDon(int maHoaDon) {
         String sql = "DELETE FROM ChiTietHoaDon WHERE MaHD = ?";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = getSafeConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, maHoaDon);
