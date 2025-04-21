@@ -137,7 +137,7 @@ public class ManHinhTrangChu extends JPanel {
         tableGioHang.setRowHeight(30);
         tableGioHang.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(new JTextField()));
         
-        // Ẩn cột ID sản phẩm nếu bạn không muốn người dùng nhìn thấy
+        
         tableGioHang.getColumnModel().getColumn(1).setMinWidth(0);
         tableGioHang.getColumnModel().getColumn(1).setMaxWidth(0);
         tableGioHang.getColumnModel().getColumn(1).setWidth(0);
@@ -170,9 +170,9 @@ public class ManHinhTrangChu extends JPanel {
         
         for (int i = 0; i < modelGioHang.getRowCount(); i++) {
             if (modelGioHang.getValueAt(i, 0).equals(sanPham.getTenSanPham())) {
-                int soLuong = (int) modelGioHang.getValueAt(i, 3) + 1; // Adjusted column index
-                modelGioHang.setValueAt(soLuong, i, 3); // Adjusted column index
-                modelGioHang.setValueAt(String.format("%,.0f VNĐ", sanPham.getGia().doubleValue() * soLuong), i, 4); // Adjusted column index
+                int soLuong = (int) modelGioHang.getValueAt(i, 3) + 1; 
+                modelGioHang.setValueAt(soLuong, i, 3); 
+                modelGioHang.setValueAt(String.format("%,.0f VNĐ", sanPham.getGia().doubleValue() * soLuong), i, 4); 
                 daTonTai = true;
                 break;
             }
@@ -181,7 +181,7 @@ public class ManHinhTrangChu extends JPanel {
         if (!daTonTai) {
             Object[] row = {
                 sanPham.getTenSanPham(),
-                sanPham.getMaSanPham(), // Store the product ID
+                sanPham.getMaSanPham(), 
                 String.format("%,.0f VNĐ", sanPham.getGia()),
                 1,
                 String.format("%,.0f VNĐ", sanPham.getGia())
@@ -211,9 +211,9 @@ public class ManHinhTrangChu extends JPanel {
 
         for (int i = 0; i < modelGioHang.getRowCount(); i++) {
             String tenSP = modelGioHang.getValueAt(i, 0).toString();
-            int maSP = (int) modelGioHang.getValueAt(i, 1); // Get product ID
-            String donGiaStr = modelGioHang.getValueAt(i, 2).toString().replaceAll("[^\\d.]", ""); // Adjusted column index
-            String soLuongStr = modelGioHang.getValueAt(i, 3).toString(); // Adjusted column index
+            int maSP = (int) modelGioHang.getValueAt(i, 1); 
+            String donGiaStr = modelGioHang.getValueAt(i, 2).toString().replaceAll("[^\\d.]", ""); 
+            String soLuongStr = modelGioHang.getValueAt(i, 3).toString(); 
 
             double donGia = Double.parseDouble(donGiaStr);
             int soLuong = Integer.parseInt(soLuongStr);
@@ -222,7 +222,7 @@ public class ManHinhTrangChu extends JPanel {
 
             ChiTietHoaDonCaPhe ct = new ChiTietHoaDonCaPhe();
             ct.setTenSanPham(tenSP);
-            ct.setMaSanPham(maSP); // Set the product ID
+            ct.setMaSanPham(maSP); 
             ct.setDonGia(donGia);
             ct.setSoLuong(soLuong);
             ct.setThanhTien(thanhTien);

@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import ConnectDB.DatabaseConnection;
-
+//người làm nguyễn tấn phát
 public class ChiTietHoaDonCaPheDAO {
     // Phương thức bảo vệ để kiểm tra kết nối
     private Connection getSafeConnection() throws SQLException {

@@ -37,14 +37,14 @@ public class KhachHang {
         this.ngayDangKy = ngayDangKy;
     }
 
-    // Constructor khi chỉ biết tên khách hàng (ví dụ cho việc tạo khách hàng mới)
+   
     public KhachHang(String ten) {
         this.ten = ten;
         this.ho = "";
         this.gioiTinh = "Khác";
         this.cmnd = "";
         this.ngaySinh = Date.valueOf("2000-01-01");
-        this.diaChi = new DiaChi(1, ten, ten, ten, ten, ten, ten); // Địa chỉ mặc định
+        this.diaChi = new DiaChi(1, ten, ten, ten, ten, ten, ten); 
         this.soDienThoai = "";
         this.email = "";
         this.diemTichLuy = 0;

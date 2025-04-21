@@ -86,11 +86,11 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         panelMenu.add(btnThongKe);
         panelMenu.add(btnDangXuat);
 
-        // Thêm các panel vào frame
+      
         add(panelMenu, BorderLayout.WEST);
         add(panelNoiDung, BorderLayout.CENTER);
 
-        // Hiển thị màn hình trang chủ mặc định
+       
         hienThiTrangChu();
         setVisible(true);
     }
