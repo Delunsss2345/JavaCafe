@@ -15,7 +15,6 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class QuanLySanPham extends JPanel {
@@ -25,13 +24,12 @@ public class QuanLySanPham extends JPanel {
     private LoaiSanPhamDAO loaiSanPhamDAO;
     private SanPhamDAO sanPhamDAO;
     private DecimalFormat dinhDangTien;
-    private JPanel panelButton;  
     private JButton btnThem, btnSua, btnXoa;
-    private int currentMaLoai; // Track the current category ID
-    private TaiKhoan loginTaiKhoan ; 
+    private int currentMaLoai;
+    private TaiKhoan loginTaiKhoan;
     
     public QuanLySanPham(TaiKhoan tk) {
-    	this.loginTaiKhoan = tk ; 
+    	this.loginTaiKhoan = tk;
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         dinhDangTien = new DecimalFormat("#,### VNĐ");
@@ -80,13 +78,8 @@ public class QuanLySanPham extends JPanel {
         panelCategory.add(scrollPane, BorderLayout.CENTER);
 
         JButton btnRefresh = new JButton("Làm mới");
-        btnRefresh = new JButton("Làm mới");
         btnRefresh.setBackground(new Color(102, 187, 106)); 
         btnRefresh.setForeground(Color.WHITE);
-        btnRefresh.setFocusPainted(false);
-        btnRefresh.setFont(new Font("Tahoma", Font.BOLD, 13));
-        btnRefresh.setMargin(new Insets(10, 20, 10, 20));
-
         btnRefresh.addActionListener(e -> loadLoaiSanPhamData());
         panelCategory.add(btnRefresh, BorderLayout.SOUTH);
 
@@ -111,12 +104,12 @@ public class QuanLySanPham extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(tableSanPham);
         panelProduct.add(scrollPane, BorderLayout.CENTER);
-        JLabel lblCurrentCategory ;
+        
+        JLabel lblCurrentCategory;
         if(loginTaiKhoan.getQuyen().getMaQuyen() == 1) {
-        	 lblCurrentCategory = new JLabel("Chọn một loại sản phẩm để chỉnh sửa");
-        }
-        else {
-        	 lblCurrentCategory = new JLabel("Nhân viên chọn sản phẩm để xoá");
+            lblCurrentCategory = new JLabel("Chọn một loại sản phẩm để chỉnh sửa");
+        } else {
+            lblCurrentCategory = new JLabel("Nhân viên chọn sản phẩm để xoá");
         }
         lblCurrentCategory.setHorizontalAlignment(SwingConstants.CENTER);
         panelProduct.add(lblCurrentCategory, BorderLayout.NORTH);
@@ -126,33 +119,22 @@ public class QuanLySanPham extends JPanel {
         btnThem = new JButton("Thêm Sản Phẩm");
         btnThem.setBackground(new Color(52, 152, 219)); 
         btnThem.setForeground(Color.WHITE);
-        btnThem.setFocusPainted(false);
-        btnThem.setFont(new Font("Tahoma", Font.BOLD, 13));
-        btnThem.setMargin(new Insets(8, 16, 8, 16));   
 
         btnSua = new JButton("Sửa Sản Phẩm");
-        btnSua.setBackground(new Color(241, 196, 15));  
-        btnSua.setForeground(Color.WHITE); 
-        btnSua.setFocusPainted(false);
-        btnSua.setFont(new Font("Tahoma", Font.BOLD, 13));
-        btnSua.setMargin(new Insets(8, 16, 8, 16));
+        btnSua.setBackground(new Color(241, 196, 15));
+        btnSua.setForeground(Color.WHITE);
 
         btnXoa = new JButton("Xóa Sản Phẩm");
-        btnXoa.setBackground(new Color(231, 76, 60)); 
+        btnXoa.setBackground(new Color(231, 76, 60));
         btnXoa.setForeground(Color.WHITE);
-        btnXoa.setFocusPainted(false);
-        btnXoa.setFont(new Font("Tahoma", Font.BOLD, 13));
-        btnXoa.setMargin(new Insets(8, 16, 8, 16));
 
-
-       
         btnThem.addActionListener(e -> openAddProductDialog());
         btnSua.addActionListener(e -> openEditProductDialog());
         btnXoa.addActionListener(e -> openDeleteProductDialog());
    
         if(loginTaiKhoan.getQuyen().getMaQuyen() == 1) {
-        	 panelActions.add(btnThem);
-        	 panelActions.add(btnSua);
+            panelActions.add(btnThem);
+            panelActions.add(btnSua);
         }
         panelActions.add(btnXoa);
         panelProduct.add(panelActions, BorderLayout.SOUTH);
@@ -190,7 +172,7 @@ public class QuanLySanPham extends JPanel {
     }
 
     private void loadSanPhamTheoLoai(int maLoai) {
-        List<SanPham> sanPhamList = sanPhamDAO.getSanPhamByLoai(maLoai) ;
+        List<SanPham> sanPhamList = sanPhamDAO.getSanPhamByLoai(maLoai);
         modelSanPham.setRowCount(0);  
 
         for (SanPham sanPham : sanPhamList) {
@@ -213,14 +195,12 @@ public class QuanLySanPham extends JPanel {
         tableSanPham.setRowHeight(60);
     }
 
- // Phương thức tạo và cấu hình form sản phẩm chung (rất bá đạo và chăm chút kaka)
     private JPanel createProductForm(SanPham sanPham, JTextField txtTenSanPham, JTextField txtGia,
                                    JComboBox<String> cboTrangThai, JTextArea txtMoTa,
                                    JTextField txtMaLoai, JTextField txtTenLoai,
                                    String[] hinhAnhPath, JLabel lblHinhAnh, JLabel lblPreviewImage,
                                    boolean isEdit) {
-        JPanel formPanel = new JPanel();
-        formPanel.setLayout(new GridBagLayout());
+        JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         GridBagConstraints gbc = new GridBagConstraints();
@@ -239,14 +219,12 @@ public class QuanLySanPham extends JPanel {
         
         JButton btnChonAnh = new JButton(isEdit ? "Thay đổi hình ảnh" : "Chọn ảnh");
         
-        // Hiển thị hình ảnh hiện tại nếu có
         if (isEdit && sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isEmpty()) {
             displayImage(sanPham.getHinhAnh(), lblPreviewImage);
         }
         
         btnChonAnh.addActionListener(e -> selectImage(formPanel, hinhAnhPath, lblHinhAnh, lblPreviewImage));
         
-        // Thêm các components vào form
         gbc.gridx = 0; gbc.gridy = 0;
         formPanel.add(new JLabel("Tên sản phẩm:"), gbc);
         
@@ -306,7 +284,6 @@ public class QuanLySanPham extends JPanel {
         return formPanel;
     }
 
-    // Phương thức chọn hình ảnh
     private void selectImage(Component parent, String[] hinhAnhPath, JLabel lblHinhAnh, JLabel lblPreviewImage) {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
@@ -320,7 +297,6 @@ public class QuanLySanPham extends JPanel {
         }
     }
 
-    // Phương thức hiển thị hình ảnh
     private void displayImage(String imagePath, JLabel imageLabel) {
         try {
             ImageIcon imageIcon = new ImageIcon(imagePath);
@@ -332,7 +308,6 @@ public class QuanLySanPham extends JPanel {
         }
     }
 
-    // Phương thức tìm kiếm loại sản phẩm
     private void searchProductCategory(Component parent, JTextField txtMaLoai, JTextField txtTenLoai) {
         try {
             int maLoai = Integer.parseInt(txtMaLoai.getText().trim());
@@ -346,18 +321,14 @@ public class QuanLySanPham extends JPanel {
                             "Thông báo", JOptionPane.WARNING_MESSAGE);
                 }
             } catch (Exception ex) {
-            	ex.printStackTrace();
+                ex.printStackTrace();
             }
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(parent, "Mã loại không hợp lệ", 
                     "Lỗi", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(parent, "Lỗi: " + ex.getMessage(), 
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Phương thức xác thực dữ liệu form
     private SanPham validateAndCreateProduct(Component parent, int maSanPham, String[] hinhAnhPath,
                                            JTextField txtTenSanPham, JTextField txtGia, JComboBox<String> cboTrangThai,
                                            JTextArea txtMoTa, JTextField txtMaLoai, LocalDateTime ngayTao) throws Exception {
@@ -389,8 +360,7 @@ public class QuanLySanPham extends JPanel {
             return null;
         }
         
-        // Lấy đầy đủ thông tin loại sản phẩm
-        try  {
+        try {
             LoaiSanPham loaiSanPham = loaiSanPhamDAO.getLoaiSanPhamById(maLoai);
             if (loaiSanPham == null) {
                 JOptionPane.showMessageDialog(parent, "Mã loại sản phẩm không tồn tại", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -400,27 +370,23 @@ public class QuanLySanPham extends JPanel {
             LocalDateTime ngayCapNhat = LocalDateTime.now();
             return new SanPham(maSanPham, tenSanPham, loaiSanPham, gia, moTa, trangThai, hinhAnh, 
                               ngayTao == null ? ngayCapNhat : ngayTao, ngayCapNhat);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        catch (Exception ex) {
-        	ex.printStackTrace();
-        }
-		return null;
+        return null;
     }
 
-    // Phương thức để mở dialog thêm sản phẩm
     private void openAddProductDialog() {
         JDialog addProductDialog = new JDialog((Frame) null, "Thêm Sản Phẩm", true);
         addProductDialog.setLayout(new BorderLayout());
         
-        // Khởi tạo các component
         JTextField txtTenSanPham = new JTextField(20);
         JTextField txtGia = new JTextField(20);
         JComboBox<String> cboTrangThai = new JComboBox<>(new String[]{"Đang Bán", "Hết Hàng"});
         JTextArea txtMoTa = new JTextArea(3, 20);
         
-        // Hiển thị loại sản phẩm đã chọn
         LoaiSanPham loaiDaChon = null;
-        try{
+        try {
             loaiDaChon = loaiSanPhamDAO.getLoaiSanPhamById(currentMaLoai);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -434,12 +400,10 @@ public class QuanLySanPham extends JPanel {
         final String[] hinhAnhPath = {""};
         final JLabel lblPreviewImage = new JLabel();
         
-        // Tạo form
         JPanel formPanel = createProductForm(null, txtTenSanPham, txtGia, cboTrangThai, txtMoTa, 
                                            txtMaLoai, txtTenLoai, hinhAnhPath, lblHinhAnh, 
                                            lblPreviewImage, false);
         
-        // Panel chứa các nút
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnSave = new JButton("Lưu");
         JButton btnCancel = new JButton("Hủy");
@@ -452,7 +416,7 @@ public class QuanLySanPham extends JPanel {
                                                         txtTenSanPham, txtGia, cboTrangThai, txtMoTa, 
                                                         txtMaLoai, null);
                 if (sanPham != null) {
-                    try  {
+                    try {
                         sanPhamDAO.addSanPham(sanPham);
                         loadSanPhamTheoLoai(currentMaLoai);
                         JOptionPane.showMessageDialog(addProductDialog, "Thêm sản phẩm thành công!", 
@@ -461,7 +425,7 @@ public class QuanLySanPham extends JPanel {
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(addProductDialog, "Lỗi: " + ex.getMessage(), 
                                 "Lỗi", JOptionPane.ERROR_MESSAGE);
- }
+                    }
                 }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(addProductDialog, "Lỗi: " + ex.getMessage(), 
@@ -481,7 +445,6 @@ public class QuanLySanPham extends JPanel {
         addProductDialog.setVisible(true);
     }
 
-    // Phương thức để mở dialog sửa sản phẩm
     private void openEditProductDialog() {
         int selectedRow = tableSanPham.getSelectedRow();
         if (selectedRow == -1) {
@@ -502,7 +465,6 @@ public class QuanLySanPham extends JPanel {
             JDialog editProductDialog = new JDialog((Frame) null, "Sửa Sản Phẩm", true);
             editProductDialog.setLayout(new BorderLayout());
             
-            // Khởi tạo các component với giá trị hiện tại
             JTextField txtTenSanPham = new JTextField(sanPham.getTenSanPham(), 20);
             JTextField txtGia = new JTextField(sanPham.getGia().toString(), 20);
             JComboBox<String> cboTrangThai = new JComboBox<>(new String[]{"Đang Bán", "Hết Hàng"});
@@ -519,12 +481,10 @@ public class QuanLySanPham extends JPanel {
             final String[] hinhAnhPath = {sanPham.getHinhAnh()};
             final JLabel lblPreviewImage = new JLabel();
             
-            // Tạo form
             JPanel formPanel = createProductForm(sanPham, txtTenSanPham, txtGia, cboTrangThai, txtMoTa, 
                                                txtMaLoai, txtTenLoai, hinhAnhPath, lblHinhAnh, 
                                                lblPreviewImage, true);
             
-            // Panel chứa các nút
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             JButton btnSave = new JButton("Lưu");
             JButton btnCancel = new JButton("Hủy");
@@ -546,8 +506,7 @@ public class QuanLySanPham extends JPanel {
                         } catch (Exception ex) {
                             JOptionPane.showMessageDialog(editProductDialog, "Lỗi: " + ex.getMessage(), 
                                     "Lỗi", JOptionPane.ERROR_MESSAGE);
-                        	}
-                        
+                        }
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(editProductDialog, "Lỗi: " + ex.getMessage(), 
@@ -571,7 +530,6 @@ public class QuanLySanPham extends JPanel {
         }
     }
 
-    // Phương thức xóa sản phẩm
     private void openDeleteProductDialog() {
         int selectedRow = tableSanPham.getSelectedRow();
         if (selectedRow == -1) {
@@ -601,7 +559,6 @@ public class QuanLySanPham extends JPanel {
             }
         }
     }
-
     
     private class ImageRenderer extends DefaultTableCellRenderer {
         @Override

@@ -47,11 +47,11 @@ public class ManHinhTrangChu extends JPanel {
 
     private void hienThiSanPham() {
         panelSanPham.removeAll();
-        System.out.println("Bắt đầu hiển thị sản phẩm..."); // Debug
-        System.out.println("Tổng số sản phẩm: " + danhSachSanPham.size()); // Debug
+        System.out.println("Bắt đầu hiển thị sản phẩm..."); 
+        System.out.println("Tổng số sản phẩm: " + danhSachSanPham.size()); 
         
         for (SanPham sanPham : danhSachSanPham) {
-        	System.out.println("Xử lý sản phẩm: " + sanPham.getTenSanPham()); // Debug
+        	System.out.println("Xử lý sản phẩm: " + sanPham.getTenSanPham()); 
             if (!"Đang bán".equalsIgnoreCase(sanPham.getTrangThai())) {
                 continue; 
             }
