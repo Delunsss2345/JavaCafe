@@ -20,17 +20,20 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.util.Map;
 
-public class BaoCaoDoanhThu extends JPanel implements ActionListener {
+public class BaoCaoDoanhThu extends JPanel implements ActionListener, MouseListener {
     private static final long serialVersionUID = 1L;
     private JPanel panelLoc, panelNoiDung;
     private JTable tableBaoCao, tableChiTiet;
@@ -44,6 +47,7 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener {
     private JButton btnTaoBaoCao;
     private JButton btnXuatExcel;
     private JButton btnTaoBieuDO;
+	private JLabel lblTongLoiNhuan;
 
     public BaoCaoDoanhThu() {
         setLayout(new BorderLayout());
@@ -66,6 +70,7 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String ngay = cboNam.getSelectedItem() + "-" + cboThang.getSelectedItem() + "-" + cboNgay.getSelectedItem();
         return sdf.parse(ngay);
+		
     }
 
     private void taoPanelLoc() {
@@ -93,24 +98,20 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener {
         cboNamKetThuc = new JComboBox<>(cacNam);
 
         JLabel lblLoaiBaoCao = new JLabel("Loại báo cáo:");
-        String[] cacLoaiBaoCao = { "Tổng số hóa đơn", "Tổng doanh thu", "Doanh thu theo ngày", "Doanh thu theo tháng",
-                "Doanh thu theo nhân viên", "Sản phẩm bán chạy nhất", "Tên sản phẩm và tổng doanh thu" };
+        String[] cacLoaiBaoCao = { "Số hoá đơn bán ra","Doanh thu theo tháng","Sản phẩm bán chạy nhất và chậm nhất", "Tên sản phẩm và tổng doanh thu" };
         cboLoaiBaoCao = new JComboBox<>(cacLoaiBaoCao);
 
         btnTaoBaoCao = new JButton("Tạo báo cáo");
         btnTaoBaoCao.setBackground(new Color(70, 130, 180));
         btnTaoBaoCao.setForeground(Color.WHITE);
-        btnTaoBaoCao.addActionListener(this);
         
         btnXuatExcel = new JButton("Xuất Excel");
         btnXuatExcel.setBackground(new Color(70, 130, 180));
         btnXuatExcel.setForeground(Color.WHITE);
-        btnXuatExcel.addActionListener(this);
         
         btnTaoBieuDO = new JButton("Tạo biểu đồ");
         btnTaoBieuDO.setBackground(new Color(70, 130, 180));
         btnTaoBieuDO.setForeground(Color.WHITE);
-		btnTaoBieuDO.addActionListener(this);
         
         panelLoc.add(lblNgayBatDau);
         panelLoc.add(cboNgayBatDau);
@@ -139,6 +140,11 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener {
         panelLoc.add(btnTaoBieuDO);
 
         add(panelLoc, BorderLayout.NORTH);
+        
+        // Event
+        btnTaoBaoCao.addActionListener(this);
+        btnXuatExcel.addActionListener(this);
+        btnTaoBieuDO.addActionListener(this);
     }
 
     private void taoPanelNoiDung() {
@@ -159,9 +165,19 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener {
         lblTongDoanhThu = new JLabel("Tổng doanh thu: " + dinhDangTien.format(0));
         lblTongDoanhThu.setFont(new Font("Arial", Font.BOLD, 14));
         lblTongDoanhThu.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        add(lblTongDoanhThu, BorderLayout.SOUTH);
-
+        lblTongLoiNhuan = new JLabel("Tổng lợi nhuận: " + dinhDangTien.format(0));
+        lblTongLoiNhuan.setFont(new Font("Arial", Font.BOLD, 14));
+        lblTongLoiNhuan.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        lblTongLoiNhuan.setForeground(Color.RED);
+        JPanel panelTongDoanhThuLoiNhuan = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelTongDoanhThuLoiNhuan.setBackground(new Color(240, 240, 240));
+        panelTongDoanhThuLoiNhuan.add(lblTongDoanhThu);
+        panelTongDoanhThuLoiNhuan.add(lblTongLoiNhuan);
+        panelNoiDung.add(panelTongDoanhThuLoiNhuan, BorderLayout.SOUTH);
         add(panelNoiDung, BorderLayout.CENTER);
+        
+        // Event
+        tableBaoCao.addMouseListener(this);
     }
 
     @Override
@@ -316,13 +332,8 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
                 return;}
 
             switch (loaiBaoCao) {
-                case "Tổng số hóa đơn":
-                    baoCaoTongSoHoaDon(ngayBatDau, ngayKetThuc);
-                    hienThiChiTietHoaDon(ngayBatDau, ngayKetThuc);
-                    break;
-                case "Tổng doanh thu":
-                    baoCaoTongDoanhThu(ngayBatDau, ngayKetThuc);
-                    hienThiChiTietHoaDon(ngayBatDau, ngayKetThuc);
+                case "Số hoá đơn bán ra":
+                	baoCaoCacHoaDonBanRa(ngayBatDau, ngayKetThuc);
                     break;
                 case "Doanh thu theo ngày":
                     baoCaoDoanhThuTheoNgay(ngayBatDau, ngayKetThuc);
@@ -330,15 +341,10 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
                     break;
                 case "Doanh thu theo tháng":
                     baoCaoDoanhThuTheoThang(ngayBatDau, ngayKetThuc);
-                    hienThiChiTietTheoThang(ngayBatDau, ngayKetThuc);
                     break;
-                case "Doanh thu theo nhân viên":
-                    baoCaoDoanhThuTheoNhanVien(ngayBatDau, ngayKetThuc);
-                    hienThiChiTietTheoNhanVien(ngayBatDau, ngayKetThuc);
-                    break;
-                case "Sản phẩm bán chạy nhất":
+                case "Sản phẩm bán chạy nhất và chậm nhất":
                     baoCaoSanPhamBanChayNhat(ngayBatDau, ngayKetThuc);
-                    hienThiChiTietSanPhamBanChay(ngayBatDau, ngayKetThuc);
+                    hienThiChiTietSanPham(ngayBatDau, ngayKetThuc);
                     break;
                 case "Tên sản phẩm và tổng doanh thu":
                     baoCaoSanPhamVaTongDoanhThu(ngayBatDau, ngayKetThuc);
@@ -364,62 +370,72 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
         modelBaoCao.setColumnIdentifiers(new Object[]{"Thông tin", "Giá trị"});
         modelChiTiet.setColumnIdentifiers(new Object[]{}); // Reset columns for detail table
     }
-
-    private void baoCaoTongSoHoaDon(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        int tongSoHoaDon = baoCaoDAO.getTongSoHoaDon(ngayBatDau, ngayKetThuc);
-        modelBaoCao.addRow(new Object[]{"Tổng số hóa đơn", tongSoHoaDon});
+    
+    private void baoCaoCacHoaDonBanRa(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
+    	modelBaoCao.setColumnIdentifiers(new Object[] {"Mã hoá đơn", "Doanh Thu", "Lợi nhuận"});
+    	List<Object[]> danhSachHoaDon = baoCaoDAO.getCacHoaDonBanRa(ngayBatDau, ngayKetThuc);
+    	modelBaoCao.setRowCount(0);
+    	double tongDoanhThu = 0;
+    	double tongLoiNhuan = 0;
+		for (Object[] hoaDon : danhSachHoaDon) {
+			modelBaoCao.addRow(hoaDon);
+			tongDoanhThu += (double) hoaDon[1];
+			tongLoiNhuan += (double) hoaDon[2];
+		}
+		lblTongDoanhThu.setText("Tổng doanh thu: " + dinhDangTien.format(tongDoanhThu));
+		lblTongLoiNhuan.setText("Tổng lợi nhuận: " + dinhDangTien.format(tongLoiNhuan));
+		
     }
 
-    private void hienThiChiTietHoaDon(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelChiTiet.setColumnIdentifiers(new Object[]{"Mã hoá đơn", "Tên nhân viên", "Ngày Tạo", "Tổng Tiền"});
-        modelChiTiet.setRowCount(0);
-        String thongTinHoaDon = baoCaoDAO.getThongTinTungHoaDon(ngayBatDau, ngayKetThuc);
-        String[] cacHoaDon = thongTinHoaDon.split("\n");
-        for (String hoaDon : cacHoaDon) {
-            String[] chiTiet = hoaDon.split(", ");
-            if (chiTiet.length == 4) {
-                String maHD = chiTiet[0].substring(chiTiet[0].indexOf(": ") + 2);
-                String tenNV = chiTiet[1].substring(chiTiet[1].indexOf(": ") + 2);
-                String ngayTao = chiTiet[2].substring(chiTiet[2].indexOf(": ") + 2);
-                String tongTienStr = chiTiet[3].substring(chiTiet[3].indexOf(": ") + 2);
-                try {
-                    modelChiTiet.addRow(new Object[]{maHD, tenNV, ngayTao, dinhDangTien.parse(tongTienStr)});
-                } catch (ParseException e) {
-                    modelChiTiet.addRow(new Object[]{maHD, tenNV, ngayTao, tongTienStr});
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
-    private void baoCaoTongDoanhThu(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        double tongDoanhThu = baoCaoDAO.getTongDoanhThu(ngayBatDau, ngayKetThuc);
-        modelBaoCao.addRow(new Object[]{"Tổng doanh thu", dinhDangTien.format(tongDoanhThu)});
-        lblTongDoanhThu.setText("Tổng doanh thu: " + dinhDangTien.format(tongDoanhThu));
-    }
 
     private void baoCaoDoanhThuTheoNgay(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelBaoCao.setColumnIdentifiers(new Object[]{"Ngày", "Doanh thu"});
-        List<Map.Entry<Date, Double>> doanhThuTheoNgay = baoCaoDAO.getDoanhThuTheoNgay(ngayBatDau, ngayKetThuc);
+        modelBaoCao.setColumnIdentifiers(new Object[]{"Ngày", "Doanh thu", "Lợi nhuận"});
+        List<Map<String, Object>> ketQua = baoCaoDAO.getDoanhThuVaLoiNhuanTheoNgay(ngayBatDau, ngayKetThuc);
         modelBaoCao.setRowCount(0);
         double tongDoanhThu = 0;
+        double tongLoiNhuan = 0;
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        for (Map.Entry<Date, Double> entry : doanhThuTheoNgay) {
-            modelBaoCao.addRow(new Object[]{sdf.format(entry.getKey()), dinhDangTien.format(entry.getValue())});
-            tongDoanhThu += entry.getValue();
+
+        for (Map<String, Object> row : ketQua) {
+            Date ngay = (Date) row.get("Ngay");
+            double doanhThu = (double) row.get("DoanhThu");
+            double loiNhuan = (double) row.get("LoiNhuan");
+
+            modelBaoCao.addRow(new Object[]{
+                sdf.format(ngay),
+                dinhDangTien.format(doanhThu),
+                dinhDangTien.format(loiNhuan)
+            });
+
+            tongDoanhThu += doanhThu;
+            tongLoiNhuan += loiNhuan;
         }
+
         lblTongDoanhThu.setText("Tổng doanh thu: " + dinhDangTien.format(tongDoanhThu));
+        lblTongLoiNhuan.setText("Tổng lợi nhuận: " + dinhDangTien.format(tongLoiNhuan));
     }
 
+
     private void hienThiChiTietTheoNgay(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelChiTiet.setColumnIdentifiers(new Object[]{"Ngày", "Doanh thu"});
-        List<Map.Entry<Date, Double>> doanhThuTheoNgay = baoCaoDAO.getDoanhThuTheoNgay(ngayBatDau, ngayKetThuc);
+        modelChiTiet.setColumnIdentifiers(new Object[]{"Ngày", "Doanh thu", "Lợi nhuận"});
+        List<Map<String, Object>> ketQua = baoCaoDAO.getDoanhThuVaLoiNhuanTheoNgay(ngayBatDau, ngayKetThuc);
         modelChiTiet.setRowCount(0);
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        for (Map.Entry<Date, Double> entry : doanhThuTheoNgay) {
-            modelChiTiet.addRow(new Object[]{sdf.format(entry.getKey()), dinhDangTien.format(entry.getValue())});
+
+        for (Map<String, Object> row : ketQua) {
+            Date ngay = (Date) row.get("Ngay");
+            double doanhThu = (double) row.get("DoanhThu");
+            double loiNhuan = (double) row.get("LoiNhuan");
+
+            modelChiTiet.addRow(new Object[]{
+                sdf.format(ngay),
+                dinhDangTien.format(doanhThu),
+                dinhDangTien.format(loiNhuan)
+            });
         }
     }
+
 
     private void baoCaoDoanhThuTheoThang(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
         modelBaoCao.setColumnIdentifiers(new Object[]{"Tháng/Năm", "Doanh thu"});
@@ -433,50 +449,22 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
         lblTongDoanhThu.setText("Tổng doanh thu: " + dinhDangTien.format(tongDoanhThu));
     }
 
-    private void hienThiChiTietTheoThang(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelChiTiet.setColumnIdentifiers(new Object[]{"Tháng/Năm", "Doanh thu"});
-        List<Map.Entry<String, Double>> doanhThuTheoThang = baoCaoDAO.getDoanhThuTheoThang(ngayBatDau, ngayKetThuc);
-        modelChiTiet.setRowCount(0);
-        for (Map.Entry<String, Double> entry : doanhThuTheoThang) {
-            modelChiTiet.addRow(new Object[]{entry.getKey(), dinhDangTien.format(entry.getValue())});
-        }
-    }
-
-    private void baoCaoDoanhThuTheoNhanVien(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelBaoCao.setColumnIdentifiers(new Object[]{"Nhân viên", "Doanh thu"});
-        List<Map.Entry<String, Double>> doanhThuTheoNhanVien = baoCaoDAO.getDoanhThuTheoNhanVien(ngayBatDau, ngayKetThuc);
-        modelBaoCao.setRowCount(0);
-        double tongDoanhThu = 0;
-        for (Map.Entry<String, Double> entry : doanhThuTheoNhanVien) {
-            modelBaoCao.addRow(new Object[]{entry.getKey(), dinhDangTien.format(entry.getValue())});
-            tongDoanhThu += entry.getValue();
-        }
-        lblTongDoanhThu.setText("Tổng doanh thu: " + dinhDangTien.format(tongDoanhThu));
-    }
-
-    private void hienThiChiTietTheoNhanVien(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelChiTiet.setColumnIdentifiers(new Object[]{"Nhân viên", "Doanh thu"});
-        List<Map.Entry<String, Double>> doanhThuTheoNhanVien = baoCaoDAO.getDoanhThuTheoNhanVien(ngayBatDau, ngayKetThuc);
-        modelChiTiet.setRowCount(0);
-        for (Map.Entry<String, Double> entry : doanhThuTheoNhanVien) {
-            modelChiTiet.addRow(new Object[]{entry.getKey(), dinhDangTien.format(entry.getValue())});
-        }
-    }
-
     private void baoCaoSanPhamBanChayNhat(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelBaoCao.setColumnIdentifiers(new Object[]{"Thông tin", "Giá trị"});
+        modelBaoCao.setColumnIdentifiers(new Object[]{"Tên sản phẩm", "Số lượng bán"});
         List<Map.Entry<String, Integer>> sanPhamBanChay = baoCaoDAO.getSanPhamBanChayNhat(ngayBatDau, ngayKetThuc);
+        List<Map.Entry<String, Integer>> sanPhamBanChamNhat = baoCaoDAO.getSanPhamBanChamNhat(ngayBatDau, ngayKetThuc);
         modelBaoCao.setRowCount(0);
         if (!sanPhamBanChay.isEmpty()) {
-            Map.Entry<String, Integer> topSanPham = sanPhamBanChay.get(0);
-            modelBaoCao.addRow(new Object[]{"Sản phẩm bán chạy nhất", topSanPham.getKey()});
-            modelBaoCao.addRow(new Object[]{"Số lượng bán", topSanPham.getValue()});
+            Map.Entry<String, Integer> sanPhamBanChayNhat = sanPhamBanChay.get(0);
+            Map.Entry<String, Integer> sanPhamBanCham = sanPhamBanChamNhat.get(0);
+            modelBaoCao.addRow(new Object[]{sanPhamBanChayNhat.getKey() , sanPhamBanChayNhat.getValue()});
+            modelBaoCao.addRow(new Object[] {sanPhamBanCham.getKey() , sanPhamBanCham.getValue()});
         } else {
-            modelBaoCao.addRow(new Object[]{"Sản phẩm bán chạy nhất", "Không có dữ liệu"});
+            modelBaoCao.addRow(new Object[]{"Không có sản phẩm", "Không có dữ liệu"});
         }
     }
 
-    private void hienThiChiTietSanPhamBanChay(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
+    private void hienThiChiTietSanPham(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
         modelChiTiet.setColumnIdentifiers(new Object[]{"Tên sản phẩm", "Số lượng bán"});
         List<Map.Entry<String, Integer>> sanPhamBanChay = baoCaoDAO.getSanPhamBanChayNhat(ngayBatDau, ngayKetThuc);
         modelChiTiet.setRowCount(0);
@@ -486,28 +474,139 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
     }
 
     private void baoCaoSanPhamVaTongDoanhThu(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelBaoCao.setColumnIdentifiers(new Object[]{"Thông tin", "Giá trị"});
-        double tongDoanhThuTatCaSP = 0;
-        List<Map.Entry<String, Double>> doanhThuTheoSanPham = baoCaoDAO.getDoanhThuTheoSanPham(ngayBatDau, ngayKetThuc);
-        for (Map.Entry<String, Double> entry : doanhThuTheoSanPham) {
-            tongDoanhThuTatCaSP += entry.getValue();
+        List<Object[]> list = baoCaoDAO.getDoanhThuVaLoiNhuanTheoSanPham(ngayBatDau, ngayKetThuc);
+
+        double tongDT = 0, tongLN = 0;
+        for (Object[] row : list) {
+            tongDT += (double) row[5];  // TongDoanhThu
+            tongLN += (double) row[6];  // TongLoiNhuan
         }
-        modelBaoCao.addRow(new Object[]{"Tổng doanh thu tất cả sản phẩm", dinhDangTien.format(tongDoanhThuTatCaSP)});
-        lblTongDoanhThu.setText("Tổng doanh thu: " + dinhDangTien.format(tongDoanhThuTatCaSP));
+
+        modelBaoCao.setColumnIdentifiers(new Object[]{"Chỉ số", "Giá trị"});
+        modelBaoCao.setRowCount(0);
+        modelBaoCao.addRow(new Object[]{
+            "Tổng doanh thu tất cả sản phẩm", dinhDangTien.format(tongDT)
+        });
+        modelBaoCao.addRow(new Object[]{
+            "Tổng lợi nhuận tất cả sản phẩm", dinhDangTien.format(tongLN)
+        });
+
+        lblTongDoanhThu.setText("Tổng doanh thu: " + dinhDangTien.format(tongDT));
+        lblTongLoiNhuan.setText("Tổng lợi nhuận: " + dinhDangTien.format(tongLN));
     }
 
+
     private void hienThiChiTietDoanhThuSanPham(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelChiTiet.setColumnIdentifiers(new Object[]{"Tên sản phẩm", "Tổng doanh thu"});
-        List<Map.Entry<String, Double>> doanhThuTheoSanPham = baoCaoDAO.getDoanhThuTheoSanPham(ngayBatDau, ngayKetThuc);
+        List<Object[]> list = baoCaoDAO.getDoanhThuVaLoiNhuanTheoSanPham(ngayBatDau, ngayKetThuc);
+
+        modelChiTiet.setColumnIdentifiers(new Object[]{
+            "Mã Sản Phẩm", "Tên Sản Phẩm", "Số lượng bán ra", "Giá nhập", "Giá bán",
+            "Doanh thu", "Lợi nhuận"
+        });
         modelChiTiet.setRowCount(0);
-        for (Map.Entry<String, Double> entry : doanhThuTheoSanPham) {
-            modelChiTiet.addRow(new Object[]{entry.getKey(), dinhDangTien.format(entry.getValue())});
+
+        for (Object[] row : list) {
+            modelChiTiet.addRow(new Object[]{
+                row[0],                             // MaSP
+                row[1],                             // TenSanPham
+                row[2],                             // TongSoLuongBanRa
+                dinhDangTien.format((double)row[3]),// GiaNhap
+                dinhDangTien.format((double)row[4]),// GiaBanRa
+                dinhDangTien.format((double)row[5]),// TongDoanhThu
+                dinhDangTien.format((double)row[6]) // TongLoiNhuan
+            });
         }
     }
+
     
     private void taoBieuDo() throws SQLException {
         new BieuDoBaoCao().setVisible(true);;
     }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        String loaiBaoCao = (String) cboLoaiBaoCao.getSelectedItem();
+        if (loaiBaoCao.equalsIgnoreCase("Số hoá đơn bán ra")) {
+            int row = tableBaoCao.getSelectedRow();
+            if (row >= 0) {
+                int maHoaDon = (int) modelBaoCao.getValueAt(row, 0);
+                try {
+                    Object[] chiTietHoaDon = baoCaoDAO.getThongTinTheoMaHoaDon(maHoaDon);
+                    if (chiTietHoaDon != null) {
+                        modelChiTiet.setRowCount(0);
+                        modelChiTiet.setColumnIdentifiers(new Object[] {
+                            "Mã hoá đơn", "Ngày tạo", "Tổng tiền",
+                            "Tiền khách trả", "Tiền thừa", "Mã nhân viên", "Mã khách hàng"
+                        });
+                        modelChiTiet.addRow(chiTietHoaDon);
+                    } else {
+                        JOptionPane.showMessageDialog(this,
+                            "Không tìm thấy thông tin hoá đơn mã: " + maHoaDon,
+                            "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this,
+                        "Lỗi khi truy vấn cơ sở dữ liệu: " + ex.getMessage(),
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                }
+            }
+        } else if (loaiBaoCao.equalsIgnoreCase("Doanh thu theo tháng")) {
+            int row = tableBaoCao.getSelectedRow();
+            if (row >= 0) {
+                String thangNam = (String) modelBaoCao.getValueAt(row, 0);
+                String[] thangNamParts = thangNam.split("/");
+                int thang = Integer.parseInt(thangNamParts[0]);
+                double tongLoiNhuan = 0;
+                try {
+                    List<Object[]> danhSachChiTiet = baoCaoDAO.getChiTietDoanhThuVaLoiNhuanTheoThang(thang);
+                    
+                    modelChiTiet.setRowCount(0);
+                    modelChiTiet.setColumnIdentifiers(new Object[] {
+                        "Năm", "Tháng", "Tên sản phẩm", "Giá nhập", "Giá bán", "Số lượng", "Doanh thu", "Lợi nhuận"
+                    });
+                    
+                    for (Object[] dong : danhSachChiTiet) {
+                        modelChiTiet.addRow(dong);
+                        tongLoiNhuan += (double) dong[7];
+                    }
+                   
+                 lblTongLoiNhuan.setText("Tổng lợi nhuận: " + dinhDangTien.format(tongLoiNhuan));
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Lỗi khi truy vấn cơ sở dữ liệu: " + ex.getMessage(), "Lỗi",
+                            JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        }
+
+
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
 
     
 }
