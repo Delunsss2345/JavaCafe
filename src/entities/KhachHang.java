@@ -4,7 +4,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 
 public class KhachHang {
-    private long maKhachHang;  // Đổi từ int sang long để tránh lỗi số học lớn
+    private long maKhachHang; 
     private String ho;
     private String ten;
     private String gioiTinh;
@@ -16,15 +16,13 @@ public class KhachHang {
     private int diemTichLuy;
     private Timestamp ngayDangKy;
 
-    // Constructor mặc định
     public KhachHang() {
     }
 
-    // Constructor với tất cả tham số, loại bỏ maKhachHang = 0
     public KhachHang(long maKhachHang, String ho, String ten, String gioiTinh,
                      String cmnd, Date ngaySinh, DiaChi diaChi, String soDienThoai,
                      String email, int diemTichLuy, Timestamp ngayDangKy) {
-        this.maKhachHang = maKhachHang; // Gán mã khách hàng trực tiếp
+        this.maKhachHang = maKhachHang;
         this.ho = ho;
         this.ten = ten;
         this.gioiTinh = gioiTinh;
