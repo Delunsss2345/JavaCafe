@@ -2,6 +2,7 @@
 package dao;
 
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.Map.Entry;
@@ -19,40 +20,40 @@ public class BaoCaoDoanhThuDAO {
     }
     
 
-    private String taoMenhDeWhere(String dateColumn, Date startDate, Date endDate) {
-        if (startDate != null && endDate != null) {
-            return " WHERE " + dateColumn + " BETWEEN ? AND ?";
-        } else if (startDate != null) {
-            return " WHERE " + dateColumn + " >= ?";
-        } else if (endDate != null) {
-            return " WHERE " + dateColumn + " <= ?";
+    private String taoMenhDeWhere(String cotNgay, Date ngayBatDau, Date ngayKetThuc) {
+        if (ngayBatDau != null && ngayKetThuc != null) {
+            return " WHERE " + cotNgay + " BETWEEN ? AND ?";
+        } else if (ngayBatDau != null) {
+            return " WHERE " + cotNgay + " >= ?";
+        } else if (ngayKetThuc != null) {
+            return " WHERE " + cotNgay + " <= ?";
         }
         return "";
     }
 
-    private void setNgay(PreparedStatement ps, Date startDate, Date endDate) throws SQLException {
+    private void setNgay(PreparedStatement ps, Date ngayBatDau, Date ngayKetThuc) throws SQLException {
         int parameterIndex = 1;
-        if (startDate != null) {
-            ps.setDate(parameterIndex++, new java.sql.Date(startDate.getTime()));
+        if (ngayBatDau != null) {
+            ps.setDate(parameterIndex++, new java.sql.Date(ngayBatDau.getTime()));
         }
-        if (endDate != null) {
-            ps.setDate(parameterIndex++, new java.sql.Date(endDate.getTime()));
+        if (ngayKetThuc != null) {
+            ps.setDate(parameterIndex++, new java.sql.Date(ngayKetThuc.getTime()));
         }
     }
 
-    public List<Object[]> getCacHoaDonBanRa(Date startDate, Date endDate) throws SQLException {
+    public List<Object[]> getCacHoaDonBanRa(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
         List<Object[]> cacHoaDon = new ArrayList<>();
         String sql = "SELECT HD.MaHD, SUM(CTHD.ThanhTien) AS TongDoanhThu, " +
                      "SUM(CTHD.SoLuong * (CTHD.DonGia - ISNULL(CTNH.GiaNhap, 0))) AS TongLoiNhuan " +
                      "FROM HoaDon HD " +
                      "JOIN ChiTietHoaDon CTHD ON HD.MaHD = CTHD.MaHD " +
                      "LEFT JOIN ChiTietNhapHang CTNH ON CTHD.MaSP = CTNH.MaSP ";
-        String whereClause = taoMenhDeWhere("HD.NgayTao", startDate, endDate);
+        String whereClause = taoMenhDeWhere("HD.NgayTao", ngayBatDau, ngayKetThuc);
         sql += whereClause + " GROUP BY HD.MaHD";
 
         try (Connection connection = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql)) {
-            setNgay(ps, startDate, endDate);
+            setNgay(ps, ngayBatDau, ngayKetThuc);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int maHD = rs.getInt("MaHD");
@@ -66,6 +67,7 @@ public class BaoCaoDoanhThuDAO {
     }
     
     public Object[] getThongTinTheoMaHoaDon(int maHD) throws SQLException {
+    	DecimalFormat dinhDangTien = new DecimalFormat("#,### VNĐ");
         Object[] thongTin = null;
         String sql = "SELECT * FROM HoaDon WHERE MaHD = ?";
         try (Connection connection = DatabaseConnection.getInstance().getConnection();
@@ -82,7 +84,7 @@ public class BaoCaoDoanhThuDAO {
                     int maKhachHang = rs.getInt("maKH");
 
                     thongTin = new Object[] {
-                        maHoaDon, ngayTao, tongTien, tienKhachTra, tienThua, maNV, maKhachHang
+                        maHoaDon, ngayTao, dinhDangTien.format(tongTien), dinhDangTien.format(tienKhachTra),  dinhDangTien.format(tienThua), maNV, maKhachHang
                     };
                 }
             }
@@ -90,37 +92,40 @@ public class BaoCaoDoanhThuDAO {
         return thongTin;
     }
 
-    
-    public List<Map<String, Object>> getDoanhThuVaLoiNhuanTheoNgay(Date startDate, Date endDate) throws SQLException {
-        List<Map<String, Object>> danhSach = new ArrayList<>();
-        String sql = "SELECT CAST(HD.NgayTao AS DATE) AS Ngay, " +
-                     "SUM(CTHD.ThanhTien) AS DoanhThu, " +
-                     "SUM(CTHD.SoLuong * (CTHD.DonGia - ISNULL(CTNH.GiaNhap, 0))) AS LoiNhuan " +
-                     "FROM HoaDon HD " +
-                     "JOIN ChiTietHoaDon CTHD ON HD.MaHD = CTHD.MaHD " +
-                     "LEFT JOIN ChiTietNhapHang CTNH ON CTHD.MaSP = CTNH.MaSP ";
+    public List<Object[]> getThongTinChiTietHoaDonTheoMaHoaDon(int maHoaDon) throws SQLException {
+        List<Object[]> danhSachChiTiet = new ArrayList<>();
 
-        String whereClause = taoMenhDeWhere("HD.NgayTao", startDate, endDate);
-        sql += whereClause + " GROUP BY CAST(HD.NgayTao AS DATE) ORDER BY Ngay";
-
+        String sql = "SELECT MaHD,MaCTHD, CTHD.MaSP, CTHD.TenSanPham, CTHD.SoLuong, CTHD.DonGia,CTHD.ThanhTien, LoiNhuan = CTHD.SoLuong * (CTHD.DonGia - CTNH.GiaNhap) "
+        		+ " FROM ChiTietHoaDon CTHD JOIN ChiTietNhapHang CTNH ON CTHD.MaSP = CTNH.MaSP"
+        		+ " WHERE MaHD = ? "
+        		+ " ORDER BY MaHD ";
         try (Connection connection = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
-            setNgay(ps, startDate, endDate);
+        	
+            ps.setInt(1, maHoaDon);
+            DecimalFormat dinhDangTien = new DecimalFormat("#,### VNĐ");
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("Ngay", rs.getDate("Ngay"));
-                    row.put("DoanhThu", rs.getDouble("DoanhThu"));
-                    row.put("LoiNhuan", rs.getDouble("LoiNhuan"));
-                    danhSach.add(row);
+                    int maCTHD = rs.getInt("MaCTHD");
+                    int maHD = rs.getInt("MaHD");
+                    int maSanPham = rs.getInt("MaSP");
+                    String tenSanPham = rs.getString("TenSanPham");
+                    int soLuong = rs.getInt("SoLuong");
+                    double donGia = rs.getDouble("DonGia");
+                    double thanhTien = rs.getDouble("ThanhTien");
+                    double loiNhuan = rs.getDouble("LoiNhuan");
+
+                    Object[] thongTin = { maCTHD, maHD, maSanPham, tenSanPham, soLuong, dinhDangTien.format(donGia)
+                    		, dinhDangTien.format(thanhTien), dinhDangTien.format(loiNhuan) };
+                    danhSachChiTiet.add(thongTin);
                 }
             }
         }
 
-        return danhSach;
+        return danhSachChiTiet;
     }
 
-
+    
     public List<Entry<String, Double>> getDoanhThuTheoThang(Date startDate, Date endDate) throws SQLException {
         List<Entry<String, Double>> doanhThuTheoThang = new ArrayList<>();
         String sql = "SELECT DATEPART(year, NgayTao) AS Nam, DATEPART(month, NgayTao) AS Thang, SUM(TongTien) AS DoanhThu FROM HoaDon";
@@ -282,4 +287,103 @@ public List<Object[]> getDoanhThuVaLoiNhuanTheoSanPham(Date startDate, Date endD
 		return doanhThuTheoThang;
 	}
 
+
+	public List<Object[]> getDoanhThuVaLoiNhuanTheoThang(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
+		DecimalFormat dinhDangTien = new DecimalFormat("#,### VNĐ");
+	    String sql = """
+	        SELECT MONTH(HD.NgayTao) AS Thang,
+	               SUM(CTHD.ThanhTien) AS DoanhThu,
+	               SUM(CTHD.SoLuong * (CTHD.DonGia - CTNH.GiaNhap)) AS LoiNhuan
+	        FROM ChiTietHoaDon CTHD
+	        JOIN ChiTietNhapHang CTNH ON CTNH.MaSP = CTHD.MaSP
+	        JOIN HoaDon HD ON HD.MaHD = CTHD.MaHD
+	        WHERE HD.NgayTao BETWEEN ? AND ?
+	        GROUP BY MONTH(HD.NgayTao)
+	        ORDER BY Thang
+	    """;
+
+	    List<Object[]> result = new ArrayList<>();
+	    try (Connection conn = DatabaseConnection.getInstance().getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+	        ps.setDate(1, new java.sql.Date(ngayBatDau.getTime()));
+	        ps.setDate(2, new java.sql.Date(ngayKetThuc.getTime()));
+
+	        try (ResultSet rs = ps.executeQuery()) {
+	            while (rs.next()) {
+	                result.add(new Object[]{
+	                    rs.getInt("Thang"),
+	                    rs.getDouble("DoanhThu"),
+	                    rs.getDouble("LoiNhuan")
+	                });
+	            }
+	        }
+	    }
+	    return result;
+	}
+
+	
+	public List<Object[]> getDoanhThuVaLoiNhuanTheoNgayTrong1Thang(int thang) throws SQLException {
+		String sql = "SELECT DAY(HD.NgayTao) AS NGAY,"
+				+ " DoanhThu = SUM(CTHD.ThanhTien), "
+				+ "SUM(CTHD.SoLuong * (CTHD.DonGia - CTNH.GiaNhap))  AS LoiNhuan "
+				+ "FROM  ChiTietHoaDon CTHD JOIN ChiTietNhapHang CTNH ON CTNH.MaSP = CTHD.MaSP "
+				+ "JOIN HoaDon HD  ON HD.MaHD  = "
+				+ "CTHD.MaHD WHERE MONTH(HD.NGAYTAO) = ? "
+				+ "GROUP BY DAY(HD.NgayTao) "
+				+ "ORDER BY DAY(HD.NgayTao)";
+
+		List<Object[]> result = new ArrayList<>();
+		try (Connection connection = DatabaseConnection.getInstance().getConnection();
+				PreparedStatement ps = connection.prepareStatement(sql)) {
+			ps.setInt(1, thang);
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					Object[] row = new Object[] { rs.getInt("Ngay"), rs.getDouble("DoanhThu"),
+							rs.getDouble("LoiNhuan")};
+					result.add(row);
+				}
+			}
+		}
+		return result;
+	}
+	
+	public List<Object[]> getDoanhThuVaLoiNhuanTrongNgay(int thang) throws SQLException {
+		DecimalFormat dinhDangTien = new DecimalFormat("#,### VNĐ");
+	    String sql =
+	        "SELECT CONVERT(DATE, HD.NgayTao) AS Ngay, " +
+	        "       CTHD.TenSanPham, " +
+	        "       SUM(CTHD.SoLuong) AS TongSoLuongBanRa, " +
+	        "       AVG(CTNH.GiaNhap) AS GiaNhap, " +
+	        "       AVG(CTHD.DonGia) AS GiaBan, " +
+	        "       SUM(CTHD.ThanhTien) AS DoanhThu, " +
+	        "       SUM(CTHD.SoLuong * (CTHD.DonGia - CTNH.GiaNhap)) AS LoiNhuan " +
+	        " FROM ChiTietHoaDon CTHD " +
+	        " JOIN ChiTietNhapHang CTNH ON CTNH.MaSP = CTHD.MaSP " +
+	        " JOIN HoaDon HD ON HD.MaHD = CTHD.MaHD " +
+	        " WHERE MONTH(HD.NgayTao) = ? " +
+	        " GROUP BY CONVERT(DATE, HD.NgayTao), CTHD.TenSanPham " +
+	        " ORDER BY Ngay";
+
+	    List<Object[]> result = new ArrayList<>();
+	    try (Connection connection = DatabaseConnection.getInstance().getConnection();
+	         PreparedStatement ps = connection.prepareStatement(sql)) {
+	        ps.setInt(1, thang);
+	        try (ResultSet rs = ps.executeQuery()) {
+	            while (rs.next()) {
+	                Object[] row = new Object[] {
+	                    rs.getDate("Ngay"),
+	                    rs.getString("TenSanPham"),
+	                    rs.getInt("TongSoLuongBanRa"),
+	                    dinhDangTien.format(rs.getDouble("GiaNhap")),
+	                    dinhDangTien.format(rs.getDouble("GiaBan")),
+	                    dinhDangTien.format(rs.getDouble("DoanhThu")),
+	                    dinhDangTien.format(rs.getDouble("LoiNhuan")),
+	                };
+	                result.add(row);
+	            }
+	        }
+	    }
+	    return result;
+	}
 }
