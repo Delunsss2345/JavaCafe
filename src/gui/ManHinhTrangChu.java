@@ -1,5 +1,6 @@
 package gui;
-//Người làm Phạm Thanh Huy
+// Người làm Phạm Thanh Huy
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import entities.ChiTietHoaDonCaPhe;
 import entities.SanPham;
+import entities.TaiKhoan;
 
 import dao.SanPhamDAO;
 
@@ -19,8 +21,13 @@ public class ManHinhTrangChu extends JPanel {
     private JTable tableGioHang;
     private SanPhamDAO sanPhamDAO;
     private List<SanPham> danhSachSanPham;
+    private TaiKhoan taiKhoan; // Thêm biến lưu tài khoản
 
-    public ManHinhTrangChu() {
+    /**
+     * Thay đổi constructor để nhận TaiKhoan
+     */
+    public ManHinhTrangChu(TaiKhoan taiKhoan) {
+        this.taiKhoan = taiKhoan;
         setLayout(new BorderLayout());
         sanPhamDAO = new SanPhamDAO();
 
@@ -29,8 +36,15 @@ public class ManHinhTrangChu extends JPanel {
         taiDanhSachSanPham();
     }
 
+    /**
+     * Giữ lại constructor không tham số cho phát triển, nếu cần
+     */
+    public ManHinhTrangChu() {
+        this(null);
+    }
+
     public void taiDanhSachSanPham()  {
-    	danhSachSanPham = sanPhamDAO.getAllSanPham();
+        danhSachSanPham = sanPhamDAO.getAllSanPham();
         hienThiSanPham();
     }
 
@@ -47,57 +61,41 @@ public class ManHinhTrangChu extends JPanel {
 
     private void hienThiSanPham() {
         panelSanPham.removeAll();
-        System.out.println("Bắt đầu hiển thị sản phẩm..."); 
-        System.out.println("Tổng số sản phẩm: " + danhSachSanPham.size()); 
-        
         for (SanPham sanPham : danhSachSanPham) {
-        	System.out.println("Xử lý sản phẩm: " + sanPham.getTenSanPham()); 
-            if (!"Đang bán".equalsIgnoreCase(sanPham.getTrangThai())) {
-                continue; 
-            }
+            if (!"Đang bán".equalsIgnoreCase(sanPham.getTrangThai())) continue;
 
-            JPanel panelItem = new JPanel();
-            panelItem.setLayout(new BorderLayout());
+            JPanel panelItem = new JPanel(new BorderLayout());
             panelItem.setBackground(Color.WHITE);
             panelItem.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
             panelItem.setPreferredSize(new Dimension(200, 250));
 
-          
             JLabel lblHinhAnh = new JLabel();
             if (sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isEmpty()) {
-            	File file = new File(sanPham.getHinhAnh());
-            	 if (file.exists()) {
-            	        ImageIcon icon = new ImageIcon(sanPham.getHinhAnh());
-            	        Image img = icon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
-            	        lblHinhAnh.setIcon(new ImageIcon(img));
-            	    } else {
-            	        ImageIcon icon = new ImageIcon("src\\images\\image-notfound.png");
-            	        Image img = icon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
-            	        lblHinhAnh.setIcon(new ImageIcon(img));
-            	    }
+                File file = new File(sanPham.getHinhAnh());
+                ImageIcon icon = new ImageIcon(file.exists()? sanPham.getHinhAnh(): "src/images/image-notfound.png");
+                Image img = icon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+                lblHinhAnh.setIcon(new ImageIcon(img));
             } else {
-                ImageIcon icon = new ImageIcon("src\\images\\image-notfound.png");
+                ImageIcon icon = new ImageIcon("src/images/image-notfound.png");
                 Image img = icon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
                 lblHinhAnh.setIcon(new ImageIcon(img));
             }
             lblHinhAnh.setHorizontalAlignment(SwingConstants.CENTER);
             lblHinhAnh.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-           
             JPanel panelThongTin = new JPanel(new BorderLayout());
             panelThongTin.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
-            
+            panelThongTin.setBackground(Color.WHITE);
+
             JLabel lblTen = new JLabel(sanPham.getTenSanPham(), SwingConstants.CENTER);
             lblTen.setFont(new Font("Arial", Font.BOLD, 14));
-            
             JLabel lblGia = new JLabel(String.format("%,.0f VNĐ", sanPham.getGia()), SwingConstants.CENTER);
             lblGia.setFont(new Font("Arial", Font.PLAIN, 13));
             lblGia.setForeground(new Color(200, 0, 0));
-            
+
             panelThongTin.add(lblTen, BorderLayout.NORTH);
             panelThongTin.add(lblGia, BorderLayout.SOUTH);
-            panelThongTin.setBackground(new Color(255, 255, 255));
-           
+
             JButton btnThem = new JButton("Thêm vào giỏ");
             btnThem.setBackground(new Color(50, 150, 50));
             btnThem.setForeground(Color.WHITE);
@@ -110,7 +108,6 @@ public class ManHinhTrangChu extends JPanel {
 
             panelSanPham.add(panelItem);
         }
-        
         panelSanPham.revalidate();
         panelSanPham.repaint();
     }
@@ -130,34 +127,28 @@ public class ManHinhTrangChu extends JPanel {
         modelGioHang = new DefaultTableModel(cot, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 3; 
+                return column == 3;
             }
         };
         tableGioHang = new JTable(modelGioHang);
         tableGioHang.setRowHeight(30);
         tableGioHang.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(new JTextField()));
-        
-        
+        // Ẩn cột mã SP
         tableGioHang.getColumnModel().getColumn(1).setMinWidth(0);
         tableGioHang.getColumnModel().getColumn(1).setMaxWidth(0);
-        tableGioHang.getColumnModel().getColumn(1).setWidth(0);
-        
         JScrollPane scrollPane = new JScrollPane(tableGioHang);
         panelGioHang.add(scrollPane, BorderLayout.CENTER);
 
         JPanel panelNut = new JPanel(new GridLayout(1, 2, 10, 0));
         panelNut.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-        
         JButton btnXoa = new JButton("Xóa");
         btnXoa.setBackground(new Color(200, 50, 50));
         btnXoa.setForeground(Color.WHITE);
         btnXoa.addActionListener(e -> xoaSanPhamKhoiGio());
-        
         JButton btnThanhToan = new JButton("Thanh toán");
         btnThanhToan.setBackground(new Color(50, 100, 200));
         btnThanhToan.setForeground(Color.WHITE);
         btnThanhToan.addActionListener(e -> thanhToan());
-        
         panelNut.add(btnXoa);
         panelNut.add(btnThanhToan);
         panelGioHang.add(panelNut, BorderLayout.SOUTH);
@@ -167,25 +158,20 @@ public class ManHinhTrangChu extends JPanel {
 
     private void themVaoGioHang(SanPham sanPham) {
         boolean daTonTai = false;
-        
         for (int i = 0; i < modelGioHang.getRowCount(); i++) {
             if (modelGioHang.getValueAt(i, 0).equals(sanPham.getTenSanPham())) {
-                int soLuong = (int) modelGioHang.getValueAt(i, 3) + 1; 
-                modelGioHang.setValueAt(soLuong, i, 3); 
-                modelGioHang.setValueAt(String.format("%,.0f VNĐ", sanPham.getGia().doubleValue() * soLuong), i, 4); 
+                int soLuong = (int) modelGioHang.getValueAt(i, 3) + 1;
+                modelGioHang.setValueAt(soLuong, i, 3);
+                modelGioHang.setValueAt(String.format("%,.0f VNĐ", sanPham.getGia().doubleValue() * soLuong), i,
+                        4);
                 daTonTai = true;
                 break;
             }
         }
-        
         if (!daTonTai) {
-            Object[] row = {
-                sanPham.getTenSanPham(),
-                sanPham.getMaSanPham(), 
-                String.format("%,.0f VNĐ", sanPham.getGia()),
-                1,
-                String.format("%,.0f VNĐ", sanPham.getGia())
-            };
+            Object[] row = { sanPham.getTenSanPham(), sanPham.getMaSanPham(),
+                    String.format("%,.0f VNĐ", sanPham.getGia()), 1,
+                    String.format("%,.0f VNĐ", sanPham.getGia()) };
             modelGioHang.addRow(row);
         }
     }
@@ -195,42 +181,38 @@ public class ManHinhTrangChu extends JPanel {
         if (selectedRow >= 0) {
             modelGioHang.removeRow(selectedRow);
         } else {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần xóa", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần xóa", "Thông báo",
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    void thanhToan() {
+    private void thanhToan() {
         if (modelGioHang.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(this, "Giỏ hàng trống!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Giỏ hàng trống!", "Thông báo",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        // Tạo danh sách chi tiết hóa đơn từ giỏ hàng
         List<ChiTietHoaDonCaPhe> gioHang = new ArrayList<>();
         double tongTien = 0;
-
         for (int i = 0; i < modelGioHang.getRowCount(); i++) {
             String tenSP = modelGioHang.getValueAt(i, 0).toString();
-            int maSP = (int) modelGioHang.getValueAt(i, 1); 
-            String donGiaStr = modelGioHang.getValueAt(i, 2).toString().replaceAll("[^\\d.]", ""); 
-            String soLuongStr = modelGioHang.getValueAt(i, 3).toString(); 
-
+            int maSP = (int) modelGioHang.getValueAt(i, 1);
+            String donGiaStr = modelGioHang.getValueAt(i, 2).toString().replaceAll("[^\\d.]", "");
+            String soLuongStr = modelGioHang.getValueAt(i, 3).toString();
             double donGia = Double.parseDouble(donGiaStr);
             int soLuong = Integer.parseInt(soLuongStr);
             double thanhTien = donGia * soLuong;
             tongTien += thanhTien;
-
             ChiTietHoaDonCaPhe ct = new ChiTietHoaDonCaPhe();
             ct.setTenSanPham(tenSP);
-            ct.setMaSanPham(maSP); 
+            ct.setMaSanPham(maSP);
             ct.setDonGia(donGia);
             ct.setSoLuong(soLuong);
             ct.setThanhTien(thanhTien);
-
             gioHang.add(ct);
         }
 
-        frmLapHoaDon frm = new frmLapHoaDon(gioHang);
+        frmLapHoaDon frm = new frmLapHoaDon(gioHang, taiKhoan);
         frm.setVisible(true);
     }
 }
