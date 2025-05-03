@@ -138,4 +138,3 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         SwingUtilities.invokeLater(() -> new HeThongQuanLyQuanCaPhe(null));
     }
 }
-

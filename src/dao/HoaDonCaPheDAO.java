@@ -141,7 +141,7 @@ public class HoaDonCaPheDAO {
     public List<HoaDon> getHoaDonByMaNV(int maNV) throws SQLException {
         List<HoaDon> list = new ArrayList<>();
         String sql = "SELECT MaHD, ngayTao, tongTien, tienKhachTra, tienThua, MaNV, MaKH "
-                   + "FROM HoaDonCaPhe WHERE MaNV = ?";
+                   + "FROM HoaDon WHERE MaNV = ?";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -226,6 +226,7 @@ public class HoaDonCaPheDAO {
         }
         return list;
     }
+    
     public boolean taoHoaDon(HoaDon hd, List<ChiTietHoaDonCaPhe> dsCT) {
         Connection conn = null;
         try {
