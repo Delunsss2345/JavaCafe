@@ -4,16 +4,17 @@ import entities.HoaDon;
 import entities.ChiTietHoaDonCaPhe;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import ConnectDB.DatabaseConnection;
 
 public class HoaDonCaPheDAO {
-    // Phương thức bảo vệ để kiểm tra kết nối
     private Connection getSafeConnection() throws SQLException {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null || conn.isClosed()) {
-            // Nếu kết nối đã đóng, thử lấy kết nối mới
             conn = DatabaseConnection.getInstance().getConnection();
             if (conn == null || conn.isClosed()) {
                 throw new SQLException("Không thể thiết lập kết nối đến cơ sở dữ liệu");
@@ -22,7 +23,6 @@ public class HoaDonCaPheDAO {
         return conn;
     }
     
-    // Thêm hóa đơn mới - để SQL Server tự tăng MaHD
     public int insertHoaDon(HoaDon hd) {
         String sql = "INSERT INTO HoaDon (NgayTao, TongTien, TienKhachTra, TienThua, MaNV, MaKH) VALUES (?, ?, ?, ?, ?, ?)";
         
@@ -34,14 +34,14 @@ public class HoaDonCaPheDAO {
             ps.setDouble(3, hd.getTienKhachTra());
             ps.setDouble(4, hd.getTienThua());
             ps.setInt(5, hd.getMaNV());
-            ps.setInt(6, hd.getMaKH());
+            ps.setLong(6, hd.getMaKH());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
                     if (rs.next()) {
                         int maHD = rs.getInt(1);
-                        hd.setMaHD(maHD); // Gán vào đối tượng
+                        hd.setMaHD(maHD); 
                         return maHD;
                     }
                 }
@@ -52,7 +52,6 @@ public class HoaDonCaPheDAO {
         return -1;
     }
     
-    // Lấy tên khách hàng từ MaKH
     public String getTenKhachHangByMaKH(int maKH) {
         String sql = "SELECT Ho, Ten FROM KhachHang WHERE MaKH = ?";
         
@@ -72,7 +71,6 @@ public class HoaDonCaPheDAO {
         }
     }
     
-    // Lấy tất cả hóa đơn
     public List<HoaDon> getAllHoaDon() {
         List<HoaDon> ds = new ArrayList<>();
         String sql = "SELECT * FROM HoaDon";
@@ -99,7 +97,6 @@ public class HoaDonCaPheDAO {
         return ds;
     }
 
-    // Lấy hóa đơn theo mã
     public HoaDon getHoaDonByMaHD(int maHD) {
         String sql = "SELECT * FROM HoaDon WHERE MaHD = ?";
         
@@ -127,7 +124,6 @@ public class HoaDonCaPheDAO {
         }
     }
 
-    // Xóa hóa đơn theo mã
     public boolean deleteHoaDon(int maHD) {
         String sql = "DELETE FROM HoaDon WHERE MaHD = ?";
         
@@ -142,15 +138,100 @@ public class HoaDonCaPheDAO {
             return false;
         }
     }
+    public List<HoaDon> getHoaDonByMaNV(int maNV) throws SQLException {
+        List<HoaDon> list = new ArrayList<>();
+        String sql = "SELECT MaHD, ngayTao, tongTien, tienKhachTra, tienThua, MaNV, MaKH "
+                   + "FROM HoaDonCaPhe WHERE MaNV = ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-    // Tạo hóa đơn và chi tiết hóa đơn - trường hợp giao dịch đặc biệt
+            stmt.setInt(1, maNV);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    HoaDon hd = new HoaDon(
+                        rs.getInt("MaHD"),
+                        rs.getTimestamp("ngayTao").toLocalDateTime(),
+                        rs.getDouble("tongTien"),
+                        rs.getDouble("tienKhachTra"),
+                        rs.getDouble("tienThua"),
+                        rs.getInt("MaNV"),
+                        rs.getInt("MaKH")
+                    );
+                    list.add(hd);
+                }
+            }
+        }
+        return list;
+    }
+    public List<HoaDon> getHoaDonByDate(String dateStr) {
+        List<HoaDon> danhSach = new ArrayList<>();
+        
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDate searchDate = LocalDate.parse(dateStr, formatter);
+            
+            String sql = "SELECT * FROM HoaDon WHERE CONVERT(date, NgayTao) = ?";
+            
+            try (Connection conn = getSafeConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                
+                ps.setDate(1, java.sql.Date.valueOf(searchDate));
+                
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        HoaDon hd = new HoaDon(
+                            rs.getInt("MaHD"),
+                            rs.getTimestamp("NgayTao").toLocalDateTime(),
+                            rs.getDouble("TongTien"),
+                            rs.getDouble("TienKhachTra"),
+                            rs.getDouble("TienThua"),
+                            rs.getInt("MaNV"),
+                            rs.getInt("MaKH")
+                        );
+                        danhSach.add(hd);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (DateTimeParseException e) {
+            System.err.println("Lỗi định dạng ngày: " + e.getMessage());
+        }
+        
+        return danhSach;
+    }
+    public List<HoaDon> getHoaDonByMaKH(int maKH) throws SQLException {
+        List<HoaDon> list = new ArrayList<>();
+        String sql = "SELECT MaHD, NgayTao, TongTien, TienKhachTra, TienThua, MaNV, MaKH "
+                   + "FROM HoaDon WHERE MaKH = ?";
+        
+        try (Connection conn = getSafeConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, maKH);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    HoaDon hd = new HoaDon(
+                        rs.getInt("MaHD"),
+                        rs.getTimestamp("NgayTao").toLocalDateTime(),
+                        rs.getDouble("TongTien"),
+                        rs.getDouble("TienKhachTra"),
+                        rs.getDouble("TienThua"),
+                        rs.getInt("MaNV"),
+                        rs.getInt("MaKH")
+                    );
+                    list.add(hd);
+                }
+            }
+        }
+        return list;
+    }
     public boolean taoHoaDon(HoaDon hd, List<ChiTietHoaDonCaPhe> dsCT) {
         Connection conn = null;
         try {
             conn = getSafeConnection();
             conn.setAutoCommit(false);
 
-            // Insert hóa đơn
             String sqlHD = "INSERT INTO HoaDon (NgayTao, TongTien, TienKhachTra, TienThua, MaNV, MaKH) VALUES (?, ?, ?, ?, ?, ?)";
             try (PreparedStatement psHD = conn.prepareStatement(sqlHD, Statement.RETURN_GENERATED_KEYS)) {
                 psHD.setTimestamp(1, Timestamp.valueOf(hd.getNgayTao()));
@@ -158,7 +239,7 @@ public class HoaDonCaPheDAO {
                 psHD.setDouble(3, hd.getTienKhachTra());
                 psHD.setDouble(4, hd.getTienThua());
                 psHD.setInt(5, hd.getMaNV());
-                psHD.setInt(6, hd.getMaKH());
+                psHD.setLong(6, hd.getMaKH());
                 psHD.executeUpdate();
 
                 try (ResultSet rs = psHD.getGeneratedKeys()) {
@@ -166,7 +247,6 @@ public class HoaDonCaPheDAO {
                         int maHoaDon = rs.getInt(1);
                         hd.setMaHD(maHoaDon);
 
-                        // Insert chi tiết hóa đơn
                         String sqlCT = "INSERT INTO ChiTietHoaDonCaPhe (MaHoaDon, MaSanPham, TenSanPham, SoLuong, DonGia, ThanhTien) VALUES (?, ?, ?, ?, ?, ?)";
                         try (PreparedStatement psCT = conn.prepareStatement(sqlCT)) {
                             for (ChiTietHoaDonCaPhe ct : dsCT) {
