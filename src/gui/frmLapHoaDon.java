@@ -1,35 +1,46 @@
 package gui;
-//Nguoi Lam Nguyen Tuan Phat
+// Người làm Nguyễn Tuấn Phát
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import ConnectDB.DatabaseConnection;
 import dao.KhachHangDAO;
+import dao.NhanVienDAO;
 import entities.ChiTietHoaDonCaPhe;
 import entities.KhachHang;
+import entities.NhanVien;
+import entities.TaiKhoan;
 
 public class frmLapHoaDon extends JFrame {
-    private JTextField txtMaNV, txtTenNV, txtMaKH, txtTenKH;
+    private JTextField txtMaNV, txtTenNV, txtMaKH, txtTenKH, txtTienKhachDua, txtTienThua;
     private JTable tableGioHang;
     private JButton btnXuatHoaDon, btnLuuKhachHang;
     private List<ChiTietHoaDonCaPhe> gioHang;
     private double tongTien = 0;
     private Connection conn;
     private KhachHangDAO khachHangDAO;
+    private NhanVienDAO nhanVienDAO;
+    private TaiKhoan taiKhoan;
 
-    public frmLapHoaDon(List<ChiTietHoaDonCaPhe> gioHang) {
+    public frmLapHoaDon(List<ChiTietHoaDonCaPhe> gioHang, TaiKhoan taiKhoan) {
         this.gioHang = gioHang;
+        this.taiKhoan = taiKhoan;
+        this.nhanVienDAO = new NhanVienDAO();
 
         try {
             conn = DatabaseConnection.getInstance().getConnection();
             khachHangDAO = new KhachHangDAO();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi kết nối CSDL: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Lỗi kết nối CSDL: " + e.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
 
         setTitle("Lập Hóa Đơn");
@@ -38,7 +49,6 @@ public class frmLapHoaDon extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Tính tổng tiền từ giỏ hàng
         if (gioHang != null) {
             for (ChiTietHoaDonCaPhe item : gioHang) {
                 item.setThanhTien(item.getDonGia() * item.getSoLuong());
@@ -46,16 +56,18 @@ public class frmLapHoaDon extends JFrame {
             }
         }
 
-        // Panel thông tin nhân viên và khách hàng
-        JPanel panelThongTin = new JPanel(new GridLayout(3, 4, 10, 10));
+        // Panel thông tin giao dịch
+        JPanel panelThongTin = new JPanel(new GridLayout(4, 4, 10, 10));
         panelThongTin.setBorder(BorderFactory.createTitledBorder("Thông tin giao dịch"));
 
         panelThongTin.add(new JLabel("Mã NV:"));
         txtMaNV = new JTextField();
+        txtMaNV.setEditable(false);
         panelThongTin.add(txtMaNV);
 
         panelThongTin.add(new JLabel("Tên NV:"));
         txtTenNV = new JTextField();
+        txtTenNV.setEditable(false);
         panelThongTin.add(txtTenNV);
 
         panelThongTin.add(new JLabel("Mã KH:"));
@@ -67,14 +79,40 @@ public class frmLapHoaDon extends JFrame {
         txtTenKH = new JTextField();
         panelThongTin.add(txtTenKH);
 
-        // Thêm label và hiển thị tổng tiền
         panelThongTin.add(new JLabel("Tổng tiền:"));
         JTextField txtTongTien = new JTextField(String.format("%,.0f VNĐ", tongTien));
         txtTongTien.setEditable(false);
         txtTongTien.setFont(new Font("Arial", Font.BOLD, 14));
         panelThongTin.add(txtTongTien);
 
+        panelThongTin.add(new JLabel("Tiền khách đưa:"));
+        txtTienKhachDua = new JTextField();
+        txtTienKhachDua.setFont(new Font("Arial", Font.BOLD, 14));
+        panelThongTin.add(txtTienKhachDua);
+        
+        panelThongTin.add(new JLabel("Tiền thừa:"));
+        txtTienThua = new JTextField();
+        txtTienThua.setEditable(false);
+        txtTienThua.setFont(new Font("Arial", Font.BOLD, 14));
+        panelThongTin.add(txtTienThua);
+
+        txtTienKhachDua.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                tinhTienThua();
+            }
+        });
+
         add(panelThongTin, BorderLayout.NORTH);
+
+        NhanVien nvLogin = nhanVienDAO.getNhanVienByTaiKhoan(taiKhoan.getTenDangNhap());
+        if (nvLogin != null) {
+            txtMaNV.setText(String.valueOf(nvLogin.getMaNV()));
+            txtTenNV.setText(nvLogin.getHo() + " " + nvLogin.getTen());
+        } else {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin nhân viên cho tài khoản đăng nhập.",
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
 
         // Bảng giỏ hàng
         String[] columnNames = {"STT", "Tên SP", "Mã SP", "Đơn giá", "Số lượng", "Thành tiền"};
@@ -84,20 +122,36 @@ public class frmLapHoaDon extends JFrame {
         scrollPane.setBorder(BorderFactory.createTitledBorder("Chi tiết giỏ hàng"));
         add(scrollPane, BorderLayout.CENTER);
 
-        // Panel chứa các nút chức năng
+        // Nút chức năng
         JPanel panelBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        
         btnLuuKhachHang = new JButton("Lưu thông tin KH");
         btnLuuKhachHang.addActionListener(e -> luuKhachHang());
-        
         btnXuatHoaDon = new JButton("Xuất hóa đơn");
         btnXuatHoaDon.addActionListener(e -> xuatHoaDon());
-        
         panelBottom.add(btnLuuKhachHang);
         panelBottom.add(btnXuatHoaDon);
         add(panelBottom, BorderLayout.SOUTH);
 
         hienThiGioHang();
+    }
+
+    private void tinhTienThua() {
+        try {
+            String tienKhachDuaText = txtTienKhachDua.getText().trim().replace(",", "").replace("VNĐ", "").trim();
+            if (!tienKhachDuaText.isEmpty()) {
+                double tienKhachDua = Double.parseDouble(tienKhachDuaText);
+                double tienThua = tienKhachDua - tongTien;
+                if (tienThua >= 0) {
+                    txtTienThua.setText(String.format("%,.0f VNĐ", tienThua));
+                } else {
+                    txtTienThua.setText("Thiếu " + String.format("%,.0f VNĐ", Math.abs(tienThua)));
+                }
+            } else {
+                txtTienThua.setText("");
+            }
+        } catch (NumberFormatException e) {
+            txtTienThua.setText("Lỗi định dạng");
+        }
     }
 
     private void hienThiGioHang() {
@@ -107,12 +161,12 @@ public class frmLapHoaDon extends JFrame {
         if (gioHang != null) {
             for (ChiTietHoaDonCaPhe ct : gioHang) {
                 model.addRow(new Object[]{
-                    stt++,
-                    ct.getTenSanPham(),
-                    ct.getMaSanPham(),
-                    String.format("%,.0f VNĐ", ct.getDonGia()),
-                    ct.getSoLuong(),
-                    String.format("%,.0f VNĐ", ct.getThanhTien())
+                        stt++,
+                        ct.getTenSanPham(),
+                        ct.getMaSanPham(),
+                        String.format("%,.0f VNĐ", ct.getDonGia()),
+                        ct.getSoLuong(),
+                        String.format("%,.0f VNĐ", ct.getThanhTien())
                 });
             }
         }
@@ -122,27 +176,18 @@ public class frmLapHoaDon extends JFrame {
         int soNgauNhien = (int) (Math.random() * 90000) + 10000;
         return String.valueOf(soNgauNhien);
     }
-    
+
     private void luuKhachHang() {
         String tenKH = getTenKhachHang();
         if (tenKH.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập tên khách hàng!", "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
         try {
-            // Sử dụng mã khách hàng ngẫu nhiên từ trường mã KH đã tạo
             String maKH = getMaKhachHang();
-            
-            // Tạo đối tượng khách hàng mới với thông tin cơ bản
             KhachHang kh = new KhachHang(tenKH);
-            
-            // Đặt mã khách hàng từ trường mã KH đã tạo ngẫu nhiên
             kh.setMaKhachHang(Long.parseLong(maKH));
-            
-            // Lưu vào cơ sở dữ liệu
             boolean ketQua = khachHangDAO.insertKhachHang(kh);
-            
             if (ketQua) {
                 JOptionPane.showMessageDialog(this, "Đã lưu thông tin khách hàng thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             } else {
@@ -159,29 +204,39 @@ public class frmLapHoaDon extends JFrame {
         String tenNV = getTenNhanVien();
         String maKH = getMaKhachHang();
         String tenKH = getTenKhachHang();
-        
-        // Kiểm tra thông tin cần thiết
         if (maNV.isEmpty() || tenNV.isEmpty() || tenKH.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin nhân viên và khách hàng!", 
-                                        "Thông báo", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin nhân viên và khách hàng!",
+                    "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
-        // Tính tiền mặc định (có thể mở rộng chức năng nhập tiền khách trả)
-        double tienKhachTra = tongTien;
+        double tienKhachTra = 0;
+        try {
+            String tienKhachDuaText = txtTienKhachDua.getText().trim().replace(",", "").replace("VNĐ", "").trim();
+            if (tienKhachDuaText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập số tiền khách đưa!",
+                        "Thông báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            tienKhachTra = Double.parseDouble(tienKhachDuaText);
+            if (tienKhachTra < tongTien) {
+                JOptionPane.showMessageDialog(this, "Số tiền khách đưa không đủ thanh toán!",
+                        "Thông báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Số tiền khách đưa không hợp lệ!",
+                    "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         
-        // Thời gian hiện tại
         LocalDateTime gioVao = LocalDateTime.now();
         LocalDateTime gioRa = LocalDateTime.now();
-        
         try {
-            // Hiển thị chi tiết hóa đơn
             frmChiTietHoaDon chiTietForm = new frmChiTietHoaDon(
-                maNV, tenNV, maKH, tenKH, tongTien, gioVao, gioRa, gioHang, 0, tienKhachTra
+                    maNV, tenNV, maKH, tenKH, tongTien, gioVao, gioRa, gioHang, 0, tienKhachTra
             );
             chiTietForm.setVisible(true);
-            
-            // Nếu hóa đơn đã in thành công, đóng form hiện tại
             if (chiTietForm.inResult) {
                 this.dispose();
             }
@@ -210,6 +265,15 @@ public class frmLapHoaDon extends JFrame {
     public double getTongTien() {
         return tongTien;
     }
+    
+    public double getTienKhachDua() {
+        try {
+            String tienText = txtTienKhachDua.getText().trim().replace(",", "").replace("VNĐ", "").trim();
+            return tienText.isEmpty() ? 0 : Double.parseDouble(tienText);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 
     public List<ChiTietHoaDonCaPhe> getGioHang() {
         return gioHang;
@@ -217,7 +281,8 @@ public class frmLapHoaDon extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            frmLapHoaDon frm = new frmLapHoaDon(null);
+            TaiKhoan demoTk = new TaiKhoan();
+            frmLapHoaDon frm = new frmLapHoaDon(null, demoTk);
             frm.setVisible(true);
         });
     }
