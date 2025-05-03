@@ -1,39 +1,44 @@
 package entities;
 
+
+
+import java.sql.Timestamp;
+
 public class NhaCungCap {
-    private int maNhaCungCap;
-    private String ten;
+    private int maNCC;
+    private String tenNCC;
     private String soDienThoai;
     private String email;
-    private DiaChi diaChi;
+    private int maDiaChi;
+    private String trangThai;
+    private Timestamp ngayTao;
 
-    public NhaCungCap() {
-    }
+    public NhaCungCap() {}
 
-    public NhaCungCap(int maNhaCungCap, String ten, String soDienThoai, 
-                     String email, DiaChi diaChi) {
-        this.maNhaCungCap = maNhaCungCap;
-        this.ten = ten;
+    public NhaCungCap(int maNCC, String tenNCC, String soDienThoai, String email, int maDiaChi, String trangThai, Timestamp ngayTao) {
+        this.maNCC = maNCC;
+        this.tenNCC = tenNCC;
         this.soDienThoai = soDienThoai;
         this.email = email;
-        this.diaChi = diaChi;
+        this.maDiaChi = maDiaChi;
+        this.trangThai = trangThai;
+        this.ngayTao = ngayTao;
     }
 
-    // Getters and Setters
-    public int getMaNhaCungCap() {
-        return maNhaCungCap;
+    public int getMaNCC() {
+        return maNCC;
     }
 
-    public void setMaNhaCungCap(int maNhaCungCap) {
-        this.maNhaCungCap = maNhaCungCap;
+    public void setMaNCC(int maNCC) {
+        this.maNCC = maNCC;
     }
 
-    public String getTen() {
-        return ten;
+    public String getTenNCC() {
+        return tenNCC;
     }
 
-    public void setTen(String ten) {
-        this.ten = ten;
+    public void setTenNCC(String tenNCC) {
+        this.tenNCC = tenNCC;
     }
 
     public String getSoDienThoai() {
@@ -52,18 +57,40 @@ public class NhaCungCap {
         this.email = email;
     }
 
-    public DiaChi getDiaChi() {
-        return diaChi;
+    public int getMaDiaChi() {
+        return maDiaChi;
     }
 
-    public void setDiaChi(DiaChi diaChi) {
-        this.diaChi = diaChi;
+    public void setMaDiaChi(int maDiaChi) {
+        this.maDiaChi = maDiaChi;
+    }
+
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
+
+    public Timestamp getNgayTao() {
+        return ngayTao;
+    }
+
+    public void setNgayTao(Timestamp ngayTao) {
+        this.ngayTao = ngayTao;
     }
 
     @Override
     public String toString() {
-        return "NhaCungCap [maNhaCungCap=" + maNhaCungCap + ", ten=" + ten + 
-               ", soDienThoai=" + soDienThoai + ", email=" + email + 
-               ", diaChi=" + diaChi + "]";
+        return "NhaCungCap{" +
+                "maNCC=" + maNCC +
+                ", tenNCC='" + tenNCC + '\'' +
+                ", soDienThoai='" + soDienThoai + '\'' +
+                ", email='" + email + '\'' +
+                ", maDiaChi=" + maDiaChi +
+                ", trangThai='" + trangThai + '\'' +
+                ", ngayTao=" + ngayTao +
+                '}';
     }
 }

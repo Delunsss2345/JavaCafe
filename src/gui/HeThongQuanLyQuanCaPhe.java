@@ -2,6 +2,7 @@ package gui;
 //Người làm Phạm Thanh Huy
 import javax.swing.*;
 
+import dao.NhanVienDAO;
 import entities.TaiKhoan;
 
 import java.awt.*;
@@ -23,13 +24,17 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
     private JPanel quanLyHoaDon;
     private JPanel frmQuanLyHoaDon;
     private JPanel baoCaoDoanhThu;
-
+    private JPanel quanLyNhanVien;
+    private JPanel ThongTinCaNhan;
+    private JPanel NhaCungCap;
+    
     public HeThongQuanLyQuanCaPhe(TaiKhoan tk) {
     	this.taiKhoanLogin = tk ; 
         // Thiết lập frame chính
         setTitle("Hệ Thống Quản Lý Quán Cà Phê");
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize(screenSize);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -43,8 +48,9 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         quanLySanPham = new QuanLySanPham(tk);
         quanLyHoaDon = new frmQuanLyHoaDon();
         baoCaoDoanhThu = new BaoCaoDoanhThu();
-      
-        
+        quanLyNhanVien = new frmNhanVien();
+        ThongTinCaNhan = new ThongTinCaNhan(new NhanVienDAO().getNhanVienByTaiKhoan(tk.getTenDangNhap()));
+        NhaCungCap = new frmNhaCungCap();
 
         // Thêm các panel vào panelNoiDung
       
@@ -52,10 +58,13 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         panelNoiDung.add(quanLySanPham, "SanPham");
 		panelNoiDung.add(quanLyHoaDon, "HoaDon");
         panelNoiDung.add(baoCaoDoanhThu, "DoanhThu");
+        panelNoiDung.add(quanLyNhanVien, "NhanVien");
+        panelNoiDung.add(ThongTinCaNhan, "ThongTinCaNhan");
+        panelNoiDung.add(NhaCungCap, "NhaCungCap");
 
         // Tạo panel menu ở bên trái
         panelMenu = new JPanel();
-        panelMenu.setLayout(new GridLayout(5, 1));
+        panelMenu.setLayout(new GridLayout(8, 1));
         panelMenu.setBackground(new Color(153, 76, 0)); // Màu nâu
         panelMenu.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -64,6 +73,10 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
         JButton btnHoaDon = taoNutMenu("Hóa Đơn", "src\\images\\rece.png");
         JButton btnThongKe = taoNutMenu("Thống Kê", "src\\images\\sta.png");
         JButton btnDangXuat = taoNutMenu("Đăng xuất", "src\\images\\logout.png");
+        JButton btnNhanVien = taoNutMenu("Nhân Viên", "src\\images\\nhanvien.png");
+        JButton btnThongTinCaNhan = taoNutMenu("Thông tin cá nhân", "src\\images\\user.png");
+        JButton btnNhaCungCap = taoNutMenu("Nhà Cung Cấp", "src\\images\\supplier.png");
+        
 
         // Thêm sự kiện cho các nút menu
         btnTrangChu.addActionListener(e -> {
@@ -78,24 +91,33 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
             ManHinhTrangChu dangNhap = new ManHinhTrangChu();
             dangNhap.setVisible(true);
         });
+        btnNhanVien.addActionListener(e -> hienThiQuanLyNhanVien());
+        btnThongTinCaNhan.addActionListener(e -> hienThiThongTinCaNhan());
+        btnNhaCungCap.addActionListener(e -> hienThiNhaCungCap());
+        
+        
 
         // Thêm các nút vào panel menu
         panelMenu.add(btnTrangChu);
         panelMenu.add(btnSanPham);
         panelMenu.add(btnHoaDon);
         panelMenu.add(btnThongKe);
+        panelMenu.add(btnNhanVien);
+        panelMenu.add(btnThongTinCaNhan);
+        panelMenu.add(btnNhaCungCap);
         panelMenu.add(btnDangXuat);
+        
 
-      
+        // Thêm các panel vào frame
         add(panelMenu, BorderLayout.WEST);
         add(panelNoiDung, BorderLayout.CENTER);
 
-       
+        // Hiển thị màn hình trang chủ mặc định
         hienThiTrangChu();
         setVisible(true);
     }
 
-    // Phương thức tạo nút menu với biểu tượng
+	// Phương thức tạo nút menu với biểu tượng
     private JButton taoNutMenu(String text, String duongDanIcon) {
         JButton nut = new JButton(text);
         nut.setIcon(new ImageIcon(new ImageIcon(duongDanIcon).getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
@@ -132,6 +154,30 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
     	}
     	else {
     		JOptionPane.showMessageDialog(null, "Chỉ có quản lý mới có quyền báo cáo doanh thu");
+    	}
+    }
+    
+    //Hiển thị màn hình quản lý nhân viên
+    private void hienThiQuanLyNhanVien() {
+    	if(taiKhoanLogin.getQuyen().getMaQuyen() == 1) {
+    		cardLayout.show(panelNoiDung, "NhanVien");
+    	}
+    	else {
+    		JOptionPane.showMessageDialog(null, "Chỉ có quản lý mới có quyền quản lý nhân viên");
+    	}
+    	
+    }
+    
+    private void hienThiThongTinCaNhan() {
+    	cardLayout.show(panelNoiDung, "ThongTinCaNhan");
+	}
+    
+    private void hienThiNhaCungCap() {
+    	if(taiKhoanLogin.getQuyen().getMaQuyen() == 1) {
+    		cardLayout.show(panelNoiDung, "NhaCungCap");
+    	}
+    	else {
+    		JOptionPane.showMessageDialog(null, "Chỉ có quản lý mới có quyền quản lý nhà cung cấp");
     	}
     }
 
