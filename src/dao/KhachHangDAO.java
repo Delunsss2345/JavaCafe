@@ -10,11 +10,9 @@ import ConnectDB.DatabaseConnection;
 import entities.KhachHang;
 
 public class KhachHangDAO {
-    // Phương thức bảo vệ để kiểm tra kết nối
     private Connection getSafeConnection() throws SQLException {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null || conn.isClosed()) {
-            // Nếu kết nối đã đóng, thử lấy kết nối mới
             conn = DatabaseConnection.getInstance().getConnection();
             if (conn == null || conn.isClosed()) {
                 throw new SQLException("Không thể thiết lập kết nối đến cơ sở dữ liệu");
@@ -64,11 +62,37 @@ public class KhachHangDAO {
 
             stmt.setLong(1, maKH);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next(); // Nếu có thì trùng
+                return rs.next(); 
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return true; // Mặc định tránh trùng nếu lỗi
+            return true; 
         }
+    }
+    public KhachHang getKhachHangById(int maKH) {
+        String sql = "SELECT MaKH, ho, ten, gioiTinh, soDienThoai, email, diemTichLuy, ngayDangKy "
+                   + "FROM KhachHang WHERE MaKH = ?";
+        try (Connection conn = getSafeConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, maKH);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    KhachHang kh = new KhachHang();
+                    kh.setMaKhachHang(rs.getLong("MaKH"));
+                    kh.setHo(rs.getString("ho"));
+                    kh.setTen(rs.getString("ten"));
+                    kh.setGioiTinh(rs.getString("gioiTinh"));
+                    kh.setSoDienThoai(rs.getString("soDienThoai"));
+                    kh.setEmail(rs.getString("email"));
+                    kh.setDiemTichLuy(rs.getInt("diemTichLuy"));
+                    kh.setNgayDangKy(rs.getTimestamp("ngayDangKy"));
+                    return kh;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
