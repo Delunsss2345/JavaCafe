@@ -28,7 +28,6 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +47,10 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener, MouseListe
     private JButton btnXuatExcel;
     private JButton btnTaoBieuDO;
 	private JLabel lblTongLoiNhuan;
+	private DefaultTableModel modelChiTietHoaDon;
+	private JTable tableChiTietHoaDon;
+	private JPanel panelBang;
+	private JPanel panelChiTietHoaDon;
 
     public BaoCaoDoanhThu() {
         setLayout(new BorderLayout());
@@ -98,7 +101,7 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener, MouseListe
         cboNamKetThuc = new JComboBox<>(cacNam);
 
         JLabel lblLoaiBaoCao = new JLabel("Loại báo cáo:");
-        String[] cacLoaiBaoCao = { "Số hoá đơn bán ra","Doanh thu theo tháng","Sản phẩm bán chạy nhất và chậm nhất", "Tên sản phẩm và tổng doanh thu" };
+        String[] cacLoaiBaoCao = { "Số hoá đơn bán ra","Doanh thu theo ngày trong tháng","Doanh thu theo tháng","Sản phẩm bán chạy nhất và chậm nhất", "Tên sản phẩm và tổng doanh thu" };
         cboLoaiBaoCao = new JComboBox<>(cacLoaiBaoCao);
 
         btnTaoBaoCao = new JButton("Tạo báo cáo");
@@ -148,20 +151,25 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener, MouseListe
     }
 
     private void taoPanelNoiDung() {
-        panelNoiDung = new JPanel(new GridLayout(2, 1, 10, 10));
+        panelNoiDung = new JPanel();
+        panelNoiDung.setLayout(new BoxLayout(panelNoiDung, BoxLayout.Y_AXIS));
         panelNoiDung.setBorder(BorderFactory.createTitledBorder("Kết quả báo cáo"));
-
+        panelNoiDung.setBackground(new Color(240, 240, 240));
+        
+        panelBang = new JPanel();
+        panelBang.setLayout(new GridLayout(1, 2, 10, 10));
+        
         modelBaoCao = new DefaultTableModel(new String[] { "Thông tin", "Giá trị" }, 0);
         tableBaoCao = new JTable(modelBaoCao);
         JScrollPane scrollBaoCao = new JScrollPane(tableBaoCao);
         scrollBaoCao.setBorder(BorderFactory.createTitledBorder("Báo cáo tổng hợp"));
-        panelNoiDung.add(scrollBaoCao);
+        panelBang.add(scrollBaoCao);
 
         modelChiTiet = new DefaultTableModel();
         tableChiTiet = new JTable(modelChiTiet);
         JScrollPane scrollChiTiet = new JScrollPane(tableChiTiet);
         scrollChiTiet.setBorder(BorderFactory.createTitledBorder("Chi tiết"));
-        panelNoiDung.add(scrollChiTiet);
+        panelBang.add(scrollChiTiet);
         lblTongDoanhThu = new JLabel("Tổng doanh thu: " + dinhDangTien.format(0));
         lblTongDoanhThu.setFont(new Font("Arial", Font.BOLD, 14));
         lblTongDoanhThu.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -173,17 +181,26 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener, MouseListe
         panelTongDoanhThuLoiNhuan.setBackground(new Color(240, 240, 240));
         panelTongDoanhThuLoiNhuan.add(lblTongDoanhThu);
         panelTongDoanhThuLoiNhuan.add(lblTongLoiNhuan);
-        panelNoiDung.add(panelTongDoanhThuLoiNhuan, BorderLayout.SOUTH);
-        add(panelNoiDung, BorderLayout.CENTER);
         
+        panelChiTietHoaDon = new JPanel(new BorderLayout());
+        
+        
+        panelNoiDung.add(panelBang);
+        panelNoiDung.add(panelChiTietHoaDon);
+        add(panelNoiDung, BorderLayout.CENTER);
+        add(panelTongDoanhThuLoiNhuan, BorderLayout.SOUTH);
         // Event
         tableBaoCao.addMouseListener(this);
+        tableChiTiet.addMouseListener(this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Object obj = e.getSource();
         if (obj.equals(btnTaoBaoCao)) {
+			if (modelChiTietHoaDon != null) {
+				modelChiTietHoaDon.setRowCount(0);
+			}
             taoBaoCao();
 		} else if (obj.equals(btnXuatExcel)) {
 			xuatExcel();
@@ -213,7 +230,6 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener, MouseListe
 
         try (Workbook workbook = new XSSFWorkbook()) {
             // --- TẠO CELL STYLES ---
-            // style cho header (in đậm)
             CellStyle headerStyle = workbook.createCellStyle();
             org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
             headerFont.setBold(true);  
@@ -227,11 +243,11 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener, MouseListe
 
             // --- TẠO SHEET "BÁO CÁO TỔNG HỢP" ---
             Sheet sheetSummary = workbook.createSheet("Báo cáo tổng hợp");
-            writeTableWithStyles(sheetSummary, tableBaoCao, headerStyle, moneyStyle);
+            ghiTableVaoSheet(sheetSummary, tableBaoCao, headerStyle, moneyStyle);
 
             // --- TẠO SHEET "CHI TIẾT" ---
             Sheet sheetDetail = workbook.createSheet("Chi tiết");
-            writeTableWithStyles(sheetDetail, tableChiTiet, headerStyle, moneyStyle);
+            ghiTableVaoSheet(sheetDetail, tableChiTiet, headerStyle, moneyStyle);
 
             // --- AUTO-SIZE COLUMNS CHO CẢ HAI SHEET ---
             autoSizeAllColumns(sheetSummary);
@@ -256,7 +272,7 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener, MouseListe
 
 
     /** Ghi dữ liệu từ JTable ra Sheet, áp dụng style cho header và tất cả ô có giá trị số */
-    private void writeTableWithStyles(Sheet sheet, JTable table,
+    private void ghiTableVaoSheet(Sheet sheet, JTable table,
                                       CellStyle headerStyle, CellStyle moneyStyle) {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         // 1. Header
@@ -297,28 +313,6 @@ public class BaoCaoDoanhThu extends JPanel implements ActionListener, MouseListe
 
 
 
-
-private void writeTableToSheet(Sheet sheet, JTable table) {
-   
-    DefaultTableModel model = (DefaultTableModel) table.getModel();
-    Row headerRow = sheet.createRow(0);
-    for (int col = 0; col < model.getColumnCount(); col++) {
-        Cell cell = headerRow.createCell(col);
-        cell.setCellValue(model.getColumnName(col));
-    }
-
-    // Write data rows
-    for (int row = 0; row < model.getRowCount(); row++) {
-        Row dataRow = sheet.createRow(row + 1);
-        for (int col = 0; col < model.getColumnCount(); col++) {
-            Cell cell = dataRow.createCell(col);
-            Object value = model.getValueAt(row, col);
-            cell.setCellValue(value == null ? "" : value.toString());
-        }
-    }
-}
-
-
 	private void taoBaoCao() {
         khoiTaoTable();
         try {
@@ -335,9 +329,8 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
                 case "Số hoá đơn bán ra":
                 	baoCaoCacHoaDonBanRa(ngayBatDau, ngayKetThuc);
                     break;
-                case "Doanh thu theo ngày":
+                case "Doanh thu theo ngày trong tháng":
                     baoCaoDoanhThuTheoNgay(ngayBatDau, ngayKetThuc);
-                    hienThiChiTietTheoNgay(ngayBatDau, ngayKetThuc);
                     break;
                 case "Doanh thu theo tháng":
                     baoCaoDoanhThuTheoThang(ngayBatDau, ngayKetThuc);
@@ -390,20 +383,21 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
 
 
     private void baoCaoDoanhThuTheoNgay(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelBaoCao.setColumnIdentifiers(new Object[]{"Ngày", "Doanh thu", "Lợi nhuận"});
-        List<Map<String, Object>> ketQua = baoCaoDAO.getDoanhThuVaLoiNhuanTheoNgay(ngayBatDau, ngayKetThuc);
+        modelBaoCao.setColumnIdentifiers(new Object[]{"Tháng", "Doanh thu", "Lợi nhuận"});
         modelBaoCao.setRowCount(0);
+
+        List<Object[]> ketQua = baoCaoDAO.getDoanhThuVaLoiNhuanTheoThang(ngayBatDau, ngayKetThuc);
+
         double tongDoanhThu = 0;
         double tongLoiNhuan = 0;
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-        for (Map<String, Object> row : ketQua) {
-            Date ngay = (Date) row.get("Ngay");
-            double doanhThu = (double) row.get("DoanhThu");
-            double loiNhuan = (double) row.get("LoiNhuan");
+        for (Object[] row : ketQua) {
+            int thang = (int) row[0];
+            double doanhThu = ((Number) row[1]).doubleValue();
+            double loiNhuan = ((Number) row[2]).doubleValue();
 
             modelBaoCao.addRow(new Object[]{
-                sdf.format(ngay),
+                thang,
                 dinhDangTien.format(doanhThu),
                 dinhDangTien.format(loiNhuan)
             });
@@ -415,27 +409,6 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
         lblTongDoanhThu.setText("Tổng doanh thu: " + dinhDangTien.format(tongDoanhThu));
         lblTongLoiNhuan.setText("Tổng lợi nhuận: " + dinhDangTien.format(tongLoiNhuan));
     }
-
-
-    private void hienThiChiTietTheoNgay(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
-        modelChiTiet.setColumnIdentifiers(new Object[]{"Ngày", "Doanh thu", "Lợi nhuận"});
-        List<Map<String, Object>> ketQua = baoCaoDAO.getDoanhThuVaLoiNhuanTheoNgay(ngayBatDau, ngayKetThuc);
-        modelChiTiet.setRowCount(0);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-
-        for (Map<String, Object> row : ketQua) {
-            Date ngay = (Date) row.get("Ngay");
-            double doanhThu = (double) row.get("DoanhThu");
-            double loiNhuan = (double) row.get("LoiNhuan");
-
-            modelChiTiet.addRow(new Object[]{
-                sdf.format(ngay),
-                dinhDangTien.format(doanhThu),
-                dinhDangTien.format(loiNhuan)
-            });
-        }
-    }
-
 
     private void baoCaoDoanhThuTheoThang(Date ngayBatDau, Date ngayKetThuc) throws SQLException {
         modelBaoCao.setColumnIdentifiers(new Object[]{"Tháng/Năm", "Doanh thu"});
@@ -531,14 +504,15 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
             if (row >= 0) {
                 int maHoaDon = (int) modelBaoCao.getValueAt(row, 0);
                 try {
-                    Object[] chiTietHoaDon = baoCaoDAO.getThongTinTheoMaHoaDon(maHoaDon);
-                    if (chiTietHoaDon != null) {
+                    Object[] thongTinHoaDon = baoCaoDAO.getThongTinTheoMaHoaDon(maHoaDon);
+                    if (thongTinHoaDon != null) {
                         modelChiTiet.setRowCount(0);
                         modelChiTiet.setColumnIdentifiers(new Object[] {
                             "Mã hoá đơn", "Ngày tạo", "Tổng tiền",
                             "Tiền khách trả", "Tiền thừa", "Mã nhân viên", "Mã khách hàng"
                         });
-                        modelChiTiet.addRow(chiTietHoaDon);
+                        modelChiTiet.addRow(thongTinHoaDon);
+                        hienThiChiTietHoaDon(maHoaDon);
                     } else {
                         JOptionPane.showMessageDialog(this,
                             "Không tìm thấy thông tin hoá đơn mã: " + maHoaDon,
@@ -551,7 +525,9 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
                     ex.printStackTrace();
                 }
             }
+            
         } else if (loaiBaoCao.equalsIgnoreCase("Doanh thu theo tháng")) {
+        	
             int row = tableBaoCao.getSelectedRow();
             if (row >= 0) {
                 String thangNam = (String) modelBaoCao.getValueAt(row, 0);
@@ -578,11 +554,71 @@ private void writeTableToSheet(Sheet sheet, JTable table) {
                     ex.printStackTrace();
                 }
             }
+        } else if (loaiBaoCao.equalsIgnoreCase("Doanh thu theo ngày trong tháng")) {
+            int row = tableBaoCao.getSelectedRow();
+            if (row >= 0) {
+                int thang = (Integer) modelBaoCao.getValueAt(row, 0);
+                try {
+                	hienThiChiTietHoaDonTheoNgayTrongThang(thang);  
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Lỗi khi truy vấn cơ sở dữ liệu: " + ex.getMessage(), "Lỗi",
+                            JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                }
+      
+        
+            }
         }
 
         }
 
 
+private void hienThiChiTietHoaDon(int maHoaDon) throws SQLException {
+    
+	System.out.println("Đang truy vấn thông tin chi tiết hoá đơn mã: " + maHoaDon);
+    List<Object[]> chiTietHoaDon = baoCaoDAO.getThongTinChiTietHoaDonTheoMaHoaDon(maHoaDon);
+	for (Object[] row1 : chiTietHoaDon) {
+		System.out.println(Arrays.toString(row1));
+	}
+    
+    if (chiTietHoaDon != null && !chiTietHoaDon.isEmpty()) {
+    	panelChiTietHoaDon.removeAll();
+        String[] columnNames = { "Mã chi tiết hoá đơn", "Mã hoá đơn", "Mã sản phẩm", "Tên sản phẩm",
+                                 "Số lượng", "Đơn giá", "Thành tiền" ,"Lợi nhuận"};
+
+        modelChiTietHoaDon = new DefaultTableModel(columnNames, 0);
+        tableChiTietHoaDon = new JTable(modelChiTietHoaDon);
+
+        
+        for (Object[] row1 : chiTietHoaDon) {
+            modelChiTietHoaDon.addRow(row1);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(tableChiTietHoaDon);
+        panelChiTietHoaDon.setBorder(BorderFactory.createTitledBorder("Chi tiết hoá đơn"));
+        panelChiTietHoaDon.add(scrollPane);
+        panelNoiDung.add(panelChiTietHoaDon);
+        
+        panelChiTietHoaDon.revalidate();
+        panelChiTietHoaDon.repaint();
+    }
+}
+
+private void hienThiChiTietHoaDonTheoNgayTrongThang(int thang) throws SQLException {
+	modelChiTiet.setColumnIdentifiers(new Object[] {"Ngày", "Tên sản phẩm", "Số lượng" , "Đơn giá", "Doanh Thu", "Lợi Nhuận"});
+	modelChiTiet.setRowCount(0);
+	tableChiTiet = new JTable(modelChiTiet);
+	List<Object[]> chiTietHoaDon = baoCaoDAO.getDoanhThuVaLoiNhuanTrongNgay(thang);
+	for (Object[] row1 : chiTietHoaDon) {
+        System.out.println(Arrays.toString(row1));
+    }
+	for (Object[] row1 : chiTietHoaDon) {
+		modelChiTiet.addRow(row1);
+	}
+	
+}
+
+	
 
 	@Override
 	public void mousePressed(MouseEvent e) {
