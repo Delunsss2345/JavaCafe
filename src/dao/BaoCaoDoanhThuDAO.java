@@ -148,7 +148,7 @@ public class BaoCaoDoanhThuDAO {
     public List<Object[]> getChiTietDoanhThuVaLoiNhuanTheoThang(int thang) throws SQLException {
         List<Object[]> danhSach = new ArrayList<>();
 
-        String sql = "SELECT YEAR(HD.NgayTao) AS Nam, MONTH(HD.NgayTao) AS Thang,TenSanPham,GiaNhap,DonGia,CTHD.SoLuong,"
+        String sql = "SELECT YEAR(HD.NgayTao) AS Nam, MONTH(HD.NgayTao) AS Thang,CTHD.TenSanPham,GiaNhap,DonGia,CTHD.SoLuong,"
         		+ " SUM(CTHD.ThanhTien) AS DoanhThu,"
         		+ " SUM(CTHD.SoLuong * (CTHD.DonGia - ISNULL(CTNH.GiaNhap, 0))) AS LoiNhuan"
         		+ " FROM HoaDon HD"
@@ -156,7 +156,7 @@ public class BaoCaoDoanhThuDAO {
         		+ " LEFT JOIN ChiTietNhapHang CTNH ON CTHD.MaSP = CTNH.MaSP "
         		+ " WHERE MONTH(HD.NgayTao) = ?";
 
-        sql += "  GROUP BY NgayTao,TenSanPham,GiaNhap,DonGia,CTHD.SoLuong";
+        sql += "  GROUP BY NgayTao,CTHD.TenSanPham,GiaNhap,DonGia,CTHD.SoLuong";
 
         try (Connection connection = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
