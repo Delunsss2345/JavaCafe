@@ -121,8 +121,7 @@ public class HeThongQuanLyQuanCaPhe extends JFrame {
     private void hienThiQuanLySanPham() { cardLayout.show(panelNoiDung, "SanPham"); }
     private void hienThiQuanLyHoaDon() { cardLayout.show(panelNoiDung, "HoaDon"); }
     private void hienThiBaoCaoDoanhThu() {
-        if (taiKhoanLogin.getQuyen().getMaQuyen() == 1) cardLayout.show(panelNoiDung, "DoanhThu");
-        else JOptionPane.showMessageDialog(this, "Chỉ có quản lý mới có quyền báo cáo doanh thu");
+       cardLayout.show(panelNoiDung, "DoanhThu");
     }
     private void hienThiQuanLyNhanVien() {
         if (taiKhoanLogin.getQuyen().getMaQuyen() == 1) cardLayout.show(panelNoiDung, "NhanVien");

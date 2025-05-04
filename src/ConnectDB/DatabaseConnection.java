@@ -9,7 +9,7 @@ public class DatabaseConnection {
     private Connection connection;
 
    
-    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=QuanLyCafeFinally;encrypt=true;trustServerCertificate=true";
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=CafeFinally;encrypt=true;trustServerCertificate=true";
     private static final String USER = "sa";
     private static final String PASSWORD = "123456";
 

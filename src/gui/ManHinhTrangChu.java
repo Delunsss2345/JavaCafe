@@ -185,6 +185,16 @@ public class ManHinhTrangChu extends JPanel {
                     JOptionPane.WARNING_MESSAGE);
         }
     }
+    
+    private void xoaTatCaSanPhamKhoiGio() {
+        int rowCount = tableGioHang.getRowCount();
+        if (rowCount > 0) {
+            modelGioHang.setRowCount(0);  
+        } else {
+            JOptionPane.showMessageDialog(this, "Giỏ hàng đang trống.", "Thông báo", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
 
     private void thanhToan() {
         if (modelGioHang.getRowCount() == 0) {
@@ -211,7 +221,11 @@ public class ManHinhTrangChu extends JPanel {
             ct.setThanhTien(thanhTien);
             gioHang.add(ct);
         }
-
+        
+        for(int i = 0 ; modelGioHang.getRowCount() >= i; i++) {
+        	xoaTatCaSanPhamKhoiGio() ; 
+        } ; 
+        
         frmLapHoaDon frm = new frmLapHoaDon(gioHang, taiKhoan);
         frm.setVisible(true);
     }
